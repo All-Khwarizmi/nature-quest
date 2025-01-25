@@ -59,6 +59,8 @@ export default function Home() {
   // Handle the image capture event
   const handleImageClassification = async (imageFile: File, imageElement: HTMLImageElement) => {
     // Pass to next module (MobileNet, upload, etc.)
+    // 👉 agent goes here
+
     handleUpload(imageFile);
   };
 
@@ -97,7 +99,7 @@ export default function Home() {
                 <div className="relative aspect-square rounded-lg overflow-hidden">
                   <Image src={blob.url || "/placeholder.svg"} alt="Captured image" fill className="object-cover" />
                 </div>
-                <Button onClick={handleRetry} className="w-full">
+                <Button onClick={handleRetry} className="w-full text-white">
                   Capture Another Image
                 </Button>
               </div>
