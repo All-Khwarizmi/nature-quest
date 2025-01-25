@@ -32,7 +32,6 @@ export const Footer = () => {
               </Button>
             </Link>
           </div>
-          <SwitchTheme />
         </div>
         <div className="mt-8 flex flex-col md:flex-row justify-center items-center gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
