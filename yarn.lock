@@ -2646,6 +2646,7 @@ __metadata:
     react-copy-to-clipboard: ~5.1.0
     react-dom: ~18.3.1
     react-hot-toast: ~2.4.0
+    tailwind-merge: ^2.6.0
     tailwindcss: 3.3.0
     type-fest: ~4.26.1
     typescript: <5.6.0
@@ -12327,9 +12328,7 @@ __metadata:
     autoprefixer: ^10.4.7
     husky: ~8.0.3
     lint-staged: ~13.2.2
-    lucide-react: ^0.474.0
     postcss: ^8.4.14
-    tailwind-merge: ^2.6.0
     tailwindcss: ^4.0.0
   languageName: unknown
   linkType: soft

@@ -1,4 +1,3 @@
-import { NavBar } from "~~/components/nav-bar";
 import { RewardsGrid } from "~~/components/rewards-grid";
 import { getUserAchievements } from "~~/lib/data";
 
