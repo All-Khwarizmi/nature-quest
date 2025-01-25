@@ -80,25 +80,13 @@ export const Header = () => {
           <div className="flex items-center">
             <Link href="/" passHref className="flex items-center gap-2 mr-6">
               <Camera className="w-6 h-6 text-primary" />
-              <span className="font-bold text-xl text-primary">Nature&apos;s Quest</span>
+              <span className="font-bold hidden md:block text-xl text-primary">Nature&apos;s Quest</span>
             </Link>
             <ul className="hidden lg:flex space-x-4">
               <HeaderMenuLinks />
             </ul>
           </div>
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-              <Search className="w-5 h-5" />
-              <span className="sr-only">Search</span>
-            </Button>
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-              <Bell className="w-5 h-5" />
-              <span className="sr-only">Notifications</span>
-            </Button>
-            <Avatar className="w-8 h-8">
-              <AvatarImage src="/placeholder.svg" />
-              <AvatarFallback>NQ</AvatarFallback>
-            </Avatar>
             <RainbowKitCustomConnectButton />
             <FaucetButton />
           </div>
