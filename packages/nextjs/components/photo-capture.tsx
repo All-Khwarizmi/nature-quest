@@ -5,7 +5,7 @@ import { Button } from "./ui/button";
 import { Camera } from "lucide-react";
 
 interface PhotoCaptureProps {
-  onImageCaptured: (image: HTMLImageElement) => void;
+  onImageCaptured: (image: File, imageElement: HTMLImageElement) => void;
 }
 
 export function PhotoCapture({ onImageCaptured }: PhotoCaptureProps) {
@@ -30,7 +30,7 @@ export function PhotoCapture({ onImageCaptured }: PhotoCaptureProps) {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
         const image = await createImageFromFile(file);
-        onImageCaptured(image);
+        onImageCaptured(file, image);
       }
     };
 
