@@ -2,6 +2,14 @@
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        hostname: "hebbkx1anhila5yf.public.blob.vercel-storage.com",
+        protocol: "https",
+      },
+    ],
+  },
   reactStrictMode: true,
   typescript: {
     ignoreBuildErrors: process.env.NEXT_PUBLIC_IGNORE_BUILD_ERROR === "true",

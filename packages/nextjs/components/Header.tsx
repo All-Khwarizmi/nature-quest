@@ -4,6 +4,9 @@ import React, { useCallback, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Button } from "./ui/button";
+import { Award, Bell, Camera, GalleryHorizontal, Search } from "lucide-react";
 import { Bars3Icon, BugAntIcon } from "@heroicons/react/24/outline";
 import { BanknotesIcon } from "@heroicons/react/24/outline";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
@@ -12,23 +15,29 @@ import { useOutsideClick } from "~~/hooks/scaffold-eth";
 type HeaderMenuLink = {
   label: string;
   href: string;
-  icon?: React.ReactNode;
+  icon: React.ReactElement;
 };
 
 export const menuLinks: HeaderMenuLink[] = [
   {
-    label: "Home",
+    label: "Capture",
     href: "/",
+    icon: <Camera className="h-4 w-4" />,
   },
   {
-    label: "ERC-20",
-    href: "/erc20",
-    icon: <BanknotesIcon className="h-4 w-4" />,
+    label: "Gallery",
+    href: "/gallery",
+    icon: <GalleryHorizontal className="h-4 w-4" />,
+  },
+  {
+    label: "Rewards",
+    href: "/rewards",
+    icon: <Award className="h-4 w-4" />,
   },
   {
     label: "Debug Contracts",
     href: "/debug",
-    icon: <BugAntIcon className="h-4 w-4" />,
+    icon: <Bars3Icon className="h-4 w-4" />,
   },
 ];
 
@@ -45,8 +54,8 @@ export const HeaderMenuLinks = () => {
               href={href}
               passHref
               className={`${
-                isActive ? "bg-secondary shadow-md" : ""
-              } hover:bg-secondary hover:shadow-md focus:!bg-secondary active:!text-neutral py-1.5 px-3 text-sm rounded-full gap-2 grid grid-flow-col`}
+                isActive ? "bg-primary text-primary-foreground" : "text-foreground"
+              } hover:bg-primary hover:text-primary-foreground transition-colors py-2 px-3 text-sm rounded-md flex items-center gap-2`}
             >
               {icon}
               <span>{label}</span>
@@ -58,9 +67,6 @@ export const HeaderMenuLinks = () => {
   );
 };
 
-/**
- * Site header
- */
 export const Header = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const burgerMenuRef = useRef<HTMLDivElement>(null);
@@ -70,46 +76,53 @@ export const Header = () => {
   );
 
   return (
-    <div className="sticky lg:static top-0 navbar bg-base-100 min-h-0 flex-shrink-0 justify-between z-20 shadow-md shadow-secondary px-0 sm:px-2">
-      <div className="navbar-start w-auto lg:w-1/2">
-        <div className="lg:hidden dropdown" ref={burgerMenuRef}>
-          <label
-            tabIndex={0}
-            className={`ml-1 btn btn-ghost ${isDrawerOpen ? "hover:bg-secondary" : "hover:bg-transparent"}`}
-            onClick={() => {
-              setIsDrawerOpen(prevIsOpenState => !prevIsOpenState);
-            }}
-          >
-            <Bars3Icon className="h-1/2" />
-          </label>
-          {isDrawerOpen && (
-            <ul
-              tabIndex={0}
-              className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"
-              onClick={() => {
-                setIsDrawerOpen(false);
-              }}
-            >
+    <div className="sticky top-0 z-50 bg-background backdrop-blur-sm border-b border-border">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          <div className="flex items-center">
+            <Link href="/" passHref className="flex items-center gap-2 mr-6">
+              <Camera className="w-6 h-6 text-primary" />
+              <span className="font-bold text-xl text-primary">Nature&apos;s Quest</span>
+            </Link>
+            <ul className="hidden lg:flex space-x-4">
               <HeaderMenuLinks />
             </ul>
-          )}
+          </div>
+          <div className="flex items-center space-x-4">
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+              <Search className="w-5 h-5" />
+              <span className="sr-only">Search</span>
+            </Button>
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+              <Bell className="w-5 h-5" />
+              <span className="sr-only">Notifications</span>
+            </Button>
+            <Avatar className="w-8 h-8">
+              <AvatarImage src="/placeholder.svg" />
+              <AvatarFallback>NQ</AvatarFallback>
+            </Avatar>
+            <RainbowKitCustomConnectButton />
+            <FaucetButton />
+          </div>
+          <div className="lg:hidden" ref={burgerMenuRef}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsDrawerOpen(prevState => !prevState)}
+              className="text-foreground hover:text-primary"
+            >
+              <Bars3Icon className="h-6 w-6" />
+            </Button>
+            {isDrawerOpen && (
+              <ul
+                className="absolute top-full right-0 mt-2 p-2 bg-background rounded-md shadow-lg"
+                onClick={() => setIsDrawerOpen(false)}
+              >
+                <HeaderMenuLinks />
+              </ul>
+            )}
+          </div>
         </div>
-        <Link href="/" passHref className="hidden lg:flex items-center gap-2 ml-4 mr-6 shrink-0">
-          <div className="flex relative w-10 h-10">
-            <Image alt="SE2 logo" className="cursor-pointer" fill src="/logo.svg" />
-          </div>
-          <div className="flex flex-col">
-            <span className="font-bold leading-tight">Scaffold-ETH</span>
-            <span className="text-xs">Ethereum dev stack</span>
-          </div>
-        </Link>
-        <ul className="hidden lg:flex lg:flex-nowrap menu menu-horizontal px-1 gap-2">
-          <HeaderMenuLinks />
-        </ul>
-      </div>
-      <div className="navbar-end flex-grow mr-4">
-        <RainbowKitCustomConnectButton />
-        <FaucetButton />
       </div>
     </div>
   );
