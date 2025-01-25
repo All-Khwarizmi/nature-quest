@@ -4,10 +4,39 @@ import { useCallback } from "react";
 import { Button } from "./ui/button";
 import { Camera } from "lucide-react";
 
-export function PhotoCapture() {
-  const handleCapture = useCallback(() => {
-    // Handle camera capture
+interface PhotoCaptureProps {
+  onImageCaptured: (image: HTMLImageElement) => void;
+}
+
+export function PhotoCapture({ onImageCaptured }: PhotoCaptureProps) {
+  const createImageFromFile = useCallback((file: File) => {
+    return new Promise<HTMLImageElement>(resolve => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.src = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
   }, []);
+
+  const handleCapture = useCallback(() => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.capture = "environment"; // Use camera on mobile if available
+
+    input.onchange = async e => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const image = await createImageFromFile(file);
+        onImageCaptured(image);
+      }
+    };
+
+    input.click();
+  }, [onImageCaptured, createImageFromFile]);
 
   return (
     <div className="w-full aspect-square flex items-center justify-center">
