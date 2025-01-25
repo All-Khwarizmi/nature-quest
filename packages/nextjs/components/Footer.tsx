@@ -2,7 +2,6 @@ import React from "react";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { Award, Camera, GalleryHorizontal, Github, Heart, MessageCircle } from "lucide-react";
-import { SwitchTheme } from "~~/components/SwitchTheme";
 
 /**
  * Site footer
