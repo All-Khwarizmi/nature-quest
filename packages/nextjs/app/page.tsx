@@ -12,11 +12,11 @@ import { QuestCard } from "~~/components/quest-card";
 import { Alert, AlertDescription, AlertTitle } from "~~/components/ui/alert";
 import { Button } from "~~/components/ui/button";
 import { Progress } from "~~/components/ui/progress";
+import { classifyImage } from "~~/services/classification-agent";
+import { ClassificationResult } from "~~/services/classification-agent/types";
 import addUpload from "~~/src/actions/uploadActions";
 import addUser, { getUser } from "~~/src/actions/userActions";
 import { User } from "~~/src/db/schema";
-import { classifyImage } from "~~/services/classification-agent";
-import { ClassificationResult } from "~~/services/classification-agent/types";
 
 export default function Home() {
   // Get the user's wallet address and connection status
@@ -55,17 +55,28 @@ export default function Home() {
     }
 
     // Upload user data to postgres
-    await handleUploadUserData(user, blob, classificationResult);
-    
+    return await handleUploadUserData(user, blob, classificationResult);
+
     // TODO: upload business data?
   };
 
   // Handle the image capture event
   const handleImageClassification = async (imageFile: File, imageElement: HTMLImageElement) => {
     // Pass to next module (MobileNet, upload, etc.)
-    // 👉 agent goes here
+
+    // Classification Agent
     const classificationResult = await classifyImage(imageElement, imageFile);
-    await handleUpload(imageFile, classificationResult);
+
+    // Save image and user data to postgres
+    const isOk = await handleUpload(imageFile, classificationResult);
+
+    if (isOk) {
+      // TODO: call quest check step
+      // fetch("/api/quest/check", {
+      //   method: "POST",
+    }
+
+    // TODO: redirect to detail  page
   };
 
   const handleRetry = () => {
@@ -179,7 +190,7 @@ export default function Home() {
 
       const uploadResult = await addUpload({
         userId: user.id,
-        classificationJson: classificationResult?.className || '',
+        classificationJson: classificationResult?.className || "",
         imageUrl: newBlob.url,
         metadata: "Spring Birds", // TODO: Update this
         status: "pending", // TODO: Update this
