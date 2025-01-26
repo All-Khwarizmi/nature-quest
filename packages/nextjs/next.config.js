@@ -8,6 +8,10 @@ const nextConfig = {
         hostname: "hebbkx1anhila5yf.public.blob.vercel-storage.com",
         protocol: "https",
       },
+      {
+        hostname: "lsyn1lexpjfh1rib.public.blob.vercel-storage.com",
+        protocol: "https",
+      },
     ],
   },
   reactStrictMode: true,
