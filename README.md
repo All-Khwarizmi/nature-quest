@@ -4,7 +4,7 @@ AI-powered citizen science platform with blockchain rewards.
 
 ### TODO
 
-- [ ] Redirect user to detail page after data upload?
+- [ ] Redirect user to detail page after data upload? (image-detail/id)
 - [ ] Implement detail page
 - [ ] Show reward badge on detail page
 - [ ] Implement gallery page
