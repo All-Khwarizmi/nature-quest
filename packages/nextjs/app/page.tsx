@@ -15,6 +15,8 @@ import { Progress } from "~~/components/ui/progress";
 import addUpload from "~~/src/actions/uploadActions";
 import addUser, { getUser } from "~~/src/actions/userActions";
 import { User } from "~~/src/db/schema";
+import { classifyImage } from "~~/services/classification-agent";
+import { ClassificationResult } from "~~/services/classification-agent/types";
 
 export default function Home() {
   // Get the user's wallet address and connection status
@@ -26,7 +28,7 @@ export default function Home() {
   const [blob, setBlob] = useState<PutBlobResult | null>(null);
   const [isUploading, setIsUploading] = useState<boolean>(false);
 
-  const handleUpload = async (imageFile: File) => {
+  const handleUpload = async (imageFile: File, classificationResult: ClassificationResult) => {
     console.log(imageFile);
 
     if (!isConnected || !address) {
@@ -53,8 +55,8 @@ export default function Home() {
     }
 
     // Upload user data to postgres
-    await handleUploadUserData(user, blob);
-
+    await handleUploadUserData(user, blob, classificationResult);
+    
     // TODO: upload business data?
   };
 
@@ -62,8 +64,8 @@ export default function Home() {
   const handleImageClassification = async (imageFile: File, imageElement: HTMLImageElement) => {
     // Pass to next module (MobileNet, upload, etc.)
     // 👉 agent goes here
-
-    await handleUpload(imageFile);
+    const classificationResult = await classifyImage(imageElement, imageFile);
+    await handleUpload(imageFile, classificationResult);
   };
 
   const handleRetry = () => {
@@ -168,13 +170,16 @@ export default function Home() {
     }
   }
 
-  async function handleUploadUserData(user: User, newBlob: PutBlobResult) {
+  async function handleUploadUserData(user: User, newBlob: PutBlobResult, classificationResult: ClassificationResult) {
     try {
       console.log("Uploading user data");
       // Update the user's db entry
+
+      // pass in result of classification... but also pass in blob results
+
       const uploadResult = await addUpload({
         userId: user.id,
-        classificationJson: JSON.stringify(newBlob), // TODO: Update this
+        classificationJson: classificationResult?.className || '',
         imageUrl: newBlob.url,
         metadata: "Spring Birds", // TODO: Update this
         status: "pending", // TODO: Update this
