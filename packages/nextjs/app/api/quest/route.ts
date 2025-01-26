@@ -13,7 +13,7 @@ import { hardhat } from "viem/chains";
 // Quest Check Module
 export async function POST(req: NextRequest) {
   //~ Check step
-  // const { classificationJson, userAddress, userUploadId } = await req.json();
+  const { classificationJson, userAddress, userUploadId } = await req.json();
   // TODO:
   // pass the classification json (string), user address (evm/mode), user "upload" (from src/db/schema) id
   // iterate over the quests
@@ -28,6 +28,10 @@ export async function POST(req: NextRequest) {
     process.env.AGENT_PRIVATE_KEY || "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
   const AGENT_ADR = process.env.AGENT_ADDRESS || "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
   const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS; //* the ERC20 contract address
+
+  if (!AGENT_PRIVATE_KEY || !AGENT_ADR || !CONTRACT_ADDRESS) {
+    return Response.json({ error: "Missing environment variables" }, { status: 500 });
+  }
 
   // Parsing the private key and converting it to an account
   AGENT_PRIVATE_KEY = AGENT_PRIVATE_KEY.startsWith("0x") ? AGENT_PRIVATE_KEY : `0x${AGENT_PRIVATE_KEY}`;
@@ -61,12 +65,16 @@ export async function POST(req: NextRequest) {
 
     // Adding the SE2Token plugin to the list of plugins
     // The sendETH() plugin is used to send ETH (or other tokens?) to the user's address
-    plugins: [sendETH() as unknown as PluginBase<EVMWalletClient>, SE2],
+    plugins: [
+      // Type cast to avoid the TS error but this is the type of the plugin anyway
+      sendETH() as unknown as PluginBase<EVMWalletClient>,
+      SE2,
+    ],
   });
 
   //? We need to make sure that the user has enough SE2 to transfer or the agent should take care of it?
-  const AMOUNT = 1;
-  const USER_ADR = (await req.json()).userAddress || "0xdd916e48C047e78392B1129c9784d807C1D25B54"; // TODO: get the user address from the request body
+  const AMOUNT = 0.01;
+  const USER_ADR = userAddress || "0xdd916e48C047e78392B1129c9784d807C1D25B54"; // TODO: get the user address from the request body
   const templatePrompt = `Transfer ${AMOUNT} of SE2 to ${USER_ADR}`; // TODO: fine tune the prompt
 
   try {
@@ -83,9 +91,9 @@ export async function POST(req: NextRequest) {
       },
     });
     console.log(result.text);
-    return Response.json({ result });
+    return Response.json({ result: result.text });
   } catch (error) {
     console.error(error);
-    Response.json({ error });
+    return Response.json({ error });
   }
 }
