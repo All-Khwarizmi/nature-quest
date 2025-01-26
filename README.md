@@ -3,14 +3,20 @@
 AI-powered citizen science platform with blockchain rewards.
 
 ### TODO
-
+// POINTS 5
 - [ ] Redirect user to detail page after data upload? (image-detail/id)
 - [ ] Implement detail page
 - [ ] Show reward badge on detail page
 - [ ] Implement gallery page
 - [ ] Implement rewards page
 - [ ] Add reward table to postgres
-- [ ] Implement quest card on main page
+- [ ] Implement assign quest card on main page
+<!-- - [ ] Try google vision api -->
+- [ ] Implement token ERC20 reward
+- [ ] Implement check step
+- [ ] Implement reward agent
+- [ ] Deploy token to mode 
+- [ ] Audit token contract
 
 # 🏄‍♂️
 
