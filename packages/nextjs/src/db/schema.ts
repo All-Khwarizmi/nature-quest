@@ -1,4 +1,3 @@
-import { relations } from "drizzle-orm";
 import { boolean, integer, jsonb, pgTable, point, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 // Users (identified by wallet address)
@@ -38,7 +37,7 @@ export const uploads = pgTable("uploads", {
   userId: uuid("user_id")
     .references(() => users.id)
     .notNull(),
-  questId: uuid("quest_id").references(() => quests.id), // optional quest
+  questId: uuid("quest_id"), //.references(() => quests.id), // optional quest
   imageUrl: text("image_url").notNull(),
   classificationJson: jsonb("classification_json").notNull(), // MobileNet results
   status: text("status").notNull().default("pending"), // pending, approved, rejected
@@ -53,35 +52,6 @@ export const uploads = pgTable("uploads", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Relations
-export const usersRelations = relations(users, ({ many }) => ({
-  uploads: many(uploads),
-}));
-
-export const companiesRelations = relations(companies, ({ many }) => ({
-  quests: many(quests),
-}));
-
-export const questsRelations = relations(quests, ({ one, many }) => ({
-  company: one(companies, {
-    fields: [quests.companyId],
-    references: [companies.id],
-  }),
-  uploads: many(uploads),
-}));
-
-export const uploadsRelations = relations(uploads, ({ one }) => ({
-  user: one(users, {
-    fields: [uploads.userId],
-    references: [users.id],
-  }),
-  quest: one(quests, {
-    fields: [uploads.questId],
-    references: [quests.id],
-  }),
-}));
-
-// Types for type safety
 export type User = typeof users.$inferSelect;
 export type Company = typeof companies.$inferSelect;
 export type Quest = typeof quests.$inferSelect;
