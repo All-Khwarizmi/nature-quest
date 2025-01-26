@@ -1,4 +1,6 @@
+import { max } from "drizzle-orm";
 import { boolean, integer, jsonb, pgTable, point, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { title } from "process";
 
 // Users (identified by wallet address)
 export const users = pgTable("users", {
@@ -6,27 +8,29 @@ export const users = pgTable("users", {
   address: text("address").notNull().unique(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+  quests: jsonb("quests").notNull(),
 });
 
-// Companies/Organizations that can sponsor quests
-export const companies = pgTable("companies", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  name: text("name").notNull(),
-  address: text("address").notNull().unique(), // wallet address
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
+// // Companies/Organizations that can sponsor quests
+// export const companies = pgTable("companies", {
+//   id: uuid("id").defaultRandom().primaryKey(),
+//   name: text("name").notNull(),
+//   address: text("address").notNull().unique(), // wallet address
+//   createdAt: timestamp("created_at").defaultNow(),
+//   updatedAt: timestamp("updated_at").defaultNow(),
+// });
 
 // Quests (can be sponsored or public)
 export const quests = pgTable("quests", {
   id: uuid("id").defaultRandom().primaryKey(),
-  companyId: uuid("company_id").references(() => companies.id), // optional sponsor
+  // companyId: uuid("company_id").references(() => companies.id), // optional sponsor
   title: text("title").notNull(),
+  classification: text("classification").notNull(),
+  userCount: integer("user_count"),
+  maxUsers: integer("max_users"),
   description: text("description").notNull(),
   reward: integer("reward").notNull(),
-  status: text("status").notNull().default("active"), // active, completed, expired
-  requirementsJson: jsonb("requirements_json"), // classification requirements
-  isPublic: boolean("is_public").notNull().default(true),
+  // isPublic: boolean("is_public").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow(),
   expiresAt: timestamp("expires_at"),
 });
@@ -53,6 +57,6 @@ export const uploads = pgTable("uploads", {
 });
 
 export type User = typeof users.$inferSelect;
-export type Company = typeof companies.$inferSelect;
+// export type Company = typeof companies.$inferSelect;
 export type Quest = typeof quests.$inferSelect;
 export type Upload = typeof uploads.$inferSelect;
