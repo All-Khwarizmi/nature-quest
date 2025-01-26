@@ -18,5 +18,7 @@ export type Quest = {
 }
 
 export interface IQuestAgent {
-    generateQuest: () => Promise<Quest>
+    generateQuest: () => Promise<Quest>;
+    // checkQuestCompleted: ;
+
 }
