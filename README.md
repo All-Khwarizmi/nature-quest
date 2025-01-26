@@ -2,6 +2,18 @@
 
 AI-powered citizen science platform with blockchain rewards.
 
+### TODO
+
+- [ ] Redirect user to detail page after data upload?
+- [ ] Implement detail page
+- [ ] Show reward badge on detail page
+- [ ] Implement gallery page
+- [ ] Implement rewards page
+- [ ] Add reward table to postgres
+- [ ] Implement quest card on main page
+
+# 🏄‍♂️
+
 ⚙️ Built using NextJS, RainbowKit, Hardhat, Wagmi, Viem, and Typescript.
 
 - ✅ **Contract Hot Reload**: Your frontend auto-adapts to your smart contract as you edit it.
