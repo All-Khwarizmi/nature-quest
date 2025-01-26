@@ -1,5 +1,7 @@
+import * as tf from '@tensorflow/tfjs';
 import { ClassificationAgentInterface, ClassificationResult } from "./types";
 import * as mobilenet from "@tensorflow-models/mobilenet";
+import "@tensorflow/tfjs-backend-webgl";
 
 export class ClassificationAgent implements ClassificationAgentInterface {
   private model: mobilenet.MobileNet | null = null;
@@ -31,6 +33,8 @@ export class ClassificationAgent implements ClassificationAgentInterface {
 
   private async initModel() {
     try {
+        await tf.ready();
+        await tf.setBackend('webgl');
       this.model = await mobilenet.load();
     } catch (error) {
       console.error("Failed to load MobileNet model:", error);
