@@ -10,15 +10,19 @@ export default function TestPage() {
 
   useEffect(() => {
     async function runTest() {
+      console.log('we are trying the test now')
       try {
         // 1. Get the file
         const response = await fetch('/white-oak-tree.jpg');
+        console.log('Fetch response:', response);
+
         const blob = await response.blob();
         const file = new File([blob], 'white-oak-tree.jpg', { type: 'image/jpeg' });
 
         // 2. Create HTMLImageElement
         const img = new Image();
         img.src = URL.createObjectURL(file);
+        console.log('img src ', img.src);
 
         // 3. Wait for image to load
         await new Promise((resolve) => {
@@ -27,6 +31,7 @@ export default function TestPage() {
 
         // 4. Run classification
         const classification = await classifyImage(img, file);
+        console.log('classification is ', classification)
         setResult(JSON.stringify(classification));
 
         // 5. Cleanup
