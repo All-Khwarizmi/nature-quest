@@ -1,26 +1,40 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0; //! @tezz - Fix the compiler version to one specific version (best practice)
-
+pragma solidity ^0.8.18;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract NatureToken is ERC20, Ownable {
-    //* @tezz - I would have an array of addresses that are allowed to mint the tokens
-    address public authorizedMinter; //Rewards agent is the authorized minter and can mint the required tokens to their wallet address
-
-    constructor(address _authorizedMinter) ERC20("NATURE", "NTR") Ownable(msg.sender) {
-        require(_authorizedMinter != address(0), "Authorized minter cannot be zero address");
-        authorizedMinter = _authorizedMinter;
-    }
-
-    //? @tezz - Let's add a setter to change the authorized minter
+    mapping(address => bool) public authorizedMinters;
+    address public admin;
+    
     modifier onlyAuthorizedMinter() {
-        require(msg.sender == authorizedMinter, "Only authorized minter can call this function");
+        require(authorizedMinters[msg.sender], "Caller is not an authorized minter");
         _;
     }
+    
+    constructor(address _admin) ERC20("NATURE", "NTR") Ownable(msg.sender) {
+        require(_admin != address(0), "Admin cannot be zero address");
+        admin = _admin;  // Fixed assignment operator
+    }
+    
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "Caller is not the admin");
+        _;
+    }
+    
+    function setAuthorizedMinter(address _minter) public onlyAdmin {
+        require(_minter != address(0), "Cannot add zero address as minter");
+        authorizedMinters[_minter] = true;
+    }
+    
+    function removeAuthorizedMinter(address _minter) public onlyAdmin {
+        require(_minter != address(0), "Cannot remove zero address as minter");
+        authorizedMinters[_minter] = false;
+    }
 
-    //* @tezz - I would use the transfer function to do the transfer. But if we use this one why not to add a `to` param to send the tokens to another address?
-    function suck(uint256 amount) public onlyAuthorizedMinter {
-        _mint(msg.sender, amount); // Mints directly to the caller's address
+    function suck(uint256 amount, address _to) public onlyAuthorizedMinter {
+        require(_to != address(0), "Cannot mint to zero address");
+        require(amount > 0, "Amount must be greater than zero");
+        _mint(_to, amount);
     }
 }
