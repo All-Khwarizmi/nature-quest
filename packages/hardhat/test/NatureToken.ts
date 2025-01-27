@@ -11,7 +11,7 @@ describe("NatureToken", function () {
   });
 
   it("Should assign the authorized minter", async function () {
-    const [_, minter] = await hre.ethers.getSigners();
+    const [minter] = await hre.ethers.getSigners();
 
     const NatureToken = await hre.ethers.getContractFactory("NatureToken");
 
