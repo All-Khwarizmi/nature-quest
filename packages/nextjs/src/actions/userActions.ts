@@ -6,7 +6,12 @@ import { eq } from "drizzle-orm";
 
 export default async function addUser(address: string) {
   // TODO: update quests to be an array of quest ids
-  return (await db.insert(users).values({ address: address, quests: [] }).returning())[0];
+  return (
+    await db
+      .insert(users)
+      .values({ address: address, quests: { pending: ["Tree Spotter"], completed: ["Bird Basics"] } })
+      .returning()
+  )[0];
 }
 
 export async function getUser(address: string) {

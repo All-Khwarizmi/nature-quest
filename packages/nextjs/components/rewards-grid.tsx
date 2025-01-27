@@ -1,32 +1,33 @@
-"use client";
-
 import { useState } from "react";
-import { AchievementBadge } from "./achievement-badge";
-import { BlockchainProofModal } from "./blockchain-proof-modal";
-import { Achievement } from "~~/lib/types";
+import { QuestCard } from "./quest-card";
+import { QuestDetailsModal } from "./quest-details-modal";
+import type { Quest } from "~~/src/db/schema";
 
 interface RewardsGridProps {
-  achievements: Achievement[];
+  quests: Quest[];
+  completedQuests: string[];
 }
 
-export function RewardsGrid({ achievements }: RewardsGridProps) {
-  const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
+export function RewardsGrid({ quests, completedQuests }: RewardsGridProps) {
+  const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
 
   return (
     <>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {achievements.map(achievement => (
-          <AchievementBadge
-            key={achievement.id}
-            achievement={achievement}
-            onClick={() => setSelectedAchievement(achievement)}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {quests.map(quest => (
+          <QuestCard
+            key={quest.id}
+            quest={quest}
+            isCompleted={completedQuests?.includes(quest.title)}
+            onClick={() => setSelectedQuest(quest)}
           />
         ))}
       </div>
-      <BlockchainProofModal
-        achievement={selectedAchievement}
-        isOpen={!!selectedAchievement}
-        onClose={() => setSelectedAchievement(null)}
+      <QuestDetailsModal
+        quest={selectedQuest}
+        isOpen={!!selectedQuest}
+        onClose={() => setSelectedQuest(null)}
+        isCompleted={selectedQuest ? completedQuests?.includes(selectedQuest.title) : false}
       />
     </>
   );
