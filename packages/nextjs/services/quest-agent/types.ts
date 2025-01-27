@@ -5,7 +5,7 @@ export type Status = typeof ACTIVE | typeof COMPLETED | typeof EXPIRED;
 export type Requirement = object;
 
 export type Quest = {
-    id: string;
+    id?: string;
     title: string;
     classification: string;
     userCount?: number;
@@ -18,6 +18,5 @@ export type Quest = {
 
 export interface IQuestAgent {
     generateQuest: () => Promise<Quest>;
-    // checkQuestCompleted: ;
-
+    // checkQuestCompleted: () => boolean; TODO: IMPLEMENT
 }

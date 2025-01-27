@@ -1,8 +1,8 @@
 import { openai } from "@ai-sdk/openai";
-import { Quest } from "./types";
+import { IQuestAgent, Quest } from "./types";
 import { generateText } from "ai";
 
-export class QuestAgent {
+export class QuestAgent implements IQuestAgent {
 
     private readonly BOTANICAL_KEYWORDS = [
         "rapeseed",
