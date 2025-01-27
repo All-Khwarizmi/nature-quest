@@ -6,15 +6,14 @@ export type Requirement = object;
 
 export type Quest = {
     id: string;
-    company_id: string;
     title: string;
+    classification: string;
+    userCount?: number;
+    maxUsers?: number;
     description: string;
-    reward: Reward;
-    status: Status;
-    requirements: Requirement;
-    is_public: boolean;
-    created_at: number;
-    expires_at: number;
+    reward: number;
+    createdAt: Date;
+    expiresAt?: Date;
 }
 
 export interface IQuestAgent {
