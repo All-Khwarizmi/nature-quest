@@ -6,14 +6,14 @@ import { erc20 } from "@goat-sdk/plugin-erc20";
 import { EVMWalletClient, sendETH } from "@goat-sdk/wallet-evm";
 import { viem } from "@goat-sdk/wallet-viem";
 import { generateText } from "ai";
-import { createWalletClient, http } from "viem";
+import { Account, createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { hardhat } from "viem/chains";
 
 // Quest Check Module
 export async function POST(req: NextRequest) {
   //~ Check step
-  const { classificationJson, userAddress, userUploadId } = await req.json();
+  const { userAddress } = await req.json();
   // TODO:
   // pass the classification json (string), user address (evm/mode), user "upload" (from src/db/schema) id
   // iterate over the quests
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
 
   // Creating the wallet client for the agent
   const walletClient = createWalletClient({
-    account: account,
+    account: account as Account,
     transport: http(process.env.RPC_PROVIDER_URL),
     chain: hardhat,
   });
