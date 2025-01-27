@@ -1,30 +1,30 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Species } from "~~/lib/types";
+import { Upload } from "~~/src/db/schema";
 
 interface GalleryGridProps {
-  species: Species[];
+  uploads: Upload[];
 }
 
-export function GalleryGrid({ species }: GalleryGridProps) {
+export function GalleryGrid({ uploads }: GalleryGridProps) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-      {species.map(species => (
+      {uploads.map(upload => (
         <Link
-          key={species.id}
-          href={`/species/${species.id}`}
+          key={upload.id}
+          href={`/details/${upload.id}`}
           className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group"
         >
           <Image
-            src={species.image || "/placeholder.svg"}
-            alt={species.name}
+            src={upload.imageUrl || "/placeholder.svg"}
+            alt={`Upload ${upload.id}`}
             fill
             className="object-cover transition-transform group-hover:scale-110"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           <div className="absolute bottom-2 left-2 right-2 text-white opacity-0 group-hover:opacity-100 transition-opacity">
-            <h3 className="text-lg font-bold leading-tight">{species.name}</h3>
-            <p className="text-sm text-[#90EE90]">{species.scientificName}</p>
+            <h3 className="text-lg font-bold leading-tight">{upload.classificationJson as string}</h3>
+            <p className="text-sm text-[#90EE90]">{new Date(upload.createdAt as Date).toLocaleDateString()}</p>
           </div>
         </Link>
       ))}
