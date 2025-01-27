@@ -13,7 +13,7 @@ import { hardhat } from "viem/chains";
 // Quest Check Module
 export async function POST(req: NextRequest) {
   //~ Check step
-  const { classificationJson, userAddress, userUploadId } = await req.json();
+  const { userAddress } = await req.json();
   // TODO:
   // pass the classification json (string), user address (evm/mode), user "upload" (from src/db/schema) id
   // iterate over the quests

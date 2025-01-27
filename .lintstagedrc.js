@@ -17,5 +17,9 @@ module.exports = {
     buildNextEslintCommand,
     checkTypesNextCommand,
   ],
+  rules: {
+    "@typescript-eslint/no-non-null-assertion": "off",
+  },
+
   "packages/hardhat/**/*.{ts,tsx}": [buildHardhatEslintCommand],
 };
