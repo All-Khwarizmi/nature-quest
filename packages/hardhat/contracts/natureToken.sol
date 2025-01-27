@@ -1,26 +1,53 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0; //! @tezz - Fix the compiler version to one specific version (best practice)
+pragma solidity ^0.8.18;
 
+// Import the ERC20 standard implementation and Ownable contract from OpenZeppelin
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract NatureToken is ERC20, Ownable {
-    //* @tezz - I would have an array of addresses that are allowed to mint the tokens
-    address public authorizedMinter; //Rewards agent is the authorized minter and can mint the required tokens to their wallet address
+    // Mapping to store authorized minters
+    mapping(address => bool) public authorizedMinters;
 
-    constructor(address _authorizedMinter) ERC20("NATURE", "NTR") Ownable(msg.sender) {
-        require(_authorizedMinter != address(0), "Authorized minter cannot be zero address");
-        authorizedMinter = _authorizedMinter;
-    }
+    // Address of the admin who has special privileges
+    address public admin;
 
-    //? @tezz - Let's add a setter to change the authorized minter
+    // Modifier to restrict access to only authorized minters
     modifier onlyAuthorizedMinter() {
-        require(msg.sender == authorizedMinter, "Only authorized minter can call this function");
+        require(authorizedMinters[msg.sender], "Caller is not an authorized minter");
         _;
     }
 
-    //* @tezz - I would use the transfer function to do the transfer. But if we use this one why not to add a `to` param to send the tokens to another address?
-    function suck(uint256 amount) public onlyAuthorizedMinter {
-        _mint(msg.sender, amount); // Mints directly to the caller's address
+    // Constructor to initialize the token and admin address
+    constructor(address _admin) ERC20("NATURE", "NTR") Ownable(msg.sender) {
+        // Ensure admin address is valid
+        require(_admin != address(0), "Admin cannot be zero address");
+        admin = _admin; // Assign admin address
+    }
+
+    // Modifier to restrict access to the admin
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "Caller is not the admin");
+        _;
+    }
+
+    // Function to authorize a new minter (only callable by admin)
+    function setAuthorizedMinter(address _minter) public onlyAdmin {
+        require(_minter != address(0), "Cannot add zero address as minter");
+        authorizedMinters[_minter] = true; // Mark the address as an authorized minter
+    }
+
+    // Function to remove an authorized minter
+    function removeAuthorizedMinter(address _minter) public onlyAdmin {
+        require(_minter != address(0), "Cannot remove zero address as minter");
+        authorizedMinters[_minter] = false; // Revoke minter authorization
+    }
+
+    // Function to mint new tokens (restricted to authorized minters)
+    function suck(uint256 amount, address _to) public onlyAuthorizedMinter {
+        require(_to != address(0), "Cannot mint to zero address");
+        require(amount > 0, "Amount must be greater than zero");
+        _mint(_to, amount); // Mint tokens to the specified address
     }
 }
+//@swarecito Do you want me to rather create a set of admins as well since authorized minters can refer to multiple agents if while still under one admin ? 
