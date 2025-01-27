@@ -1,6 +1,4 @@
-import { max } from "drizzle-orm";
-import { boolean, integer, jsonb, pgTable, point, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { title } from "process";
+import { integer, jsonb, pgTable, point, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 // Users (identified by wallet address)
 export const users = pgTable("users", {
