@@ -15,10 +15,7 @@ interface UploadData {
   userId: string;
   questId?: string;
   imageUrl: string;
-  classificationJson: {
-    species: string;
-    confidence: number;
-  };
+  classificationJson: string;
   status: "pending" | "approved" | "rejected";
   location?: [number, number];
   season?: string;
@@ -115,10 +112,8 @@ export default function SpeciesDetailPage({ params }: { params: { slug: string }
 
           <div className="grid gap-8 md:grid-cols-3">
             <div className="md:col-span-2">
-              <h1 className="text-3xl font-bold text-[#2C5530] mb-2">{uploadData.classificationJson.species}</h1>
-              <p className="text-[#90EE90] text-lg mb-4">
-                Confidence: {uploadData.classificationJson.confidence.toFixed(2)}%
-              </p>
+              <h1 className="text-3xl font-bold text-[#2C5530] mb-2">{uploadData.classificationJson}</h1>
+              {/* <p className="text-[#90EE90] text-lg mb-4">Confidence: {uploadData.classificationJson}%</p> */}
 
               <Tabs defaultValue="details" className="w-full">
                 <TabsList>
@@ -178,7 +173,7 @@ export default function SpeciesDetailPage({ params }: { params: { slug: string }
                 </CardContent>
               </Card>
 
-              <div>
+              <div className="text-white">
                 <h2 className="font-semibold text-lg mb-2 text-[#2C5530]">Status</h2>
                 <Badge
                   variant={
@@ -206,7 +201,7 @@ export default function SpeciesDetailPage({ params }: { params: { slug: string }
             </div>
           </div>
 
-          <div className="mt-8">
+          <div className="mt-8 text-white">
             <Button onClick={() => router.push("/")}>Back to Home</Button>
           </div>
         </div>

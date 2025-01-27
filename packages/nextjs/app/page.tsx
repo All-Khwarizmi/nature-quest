@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { type PutBlobResult, UploadProgressEvent } from "@vercel/blob";
+import { useRouter } from "next/navigation";
+import type { PutBlobResult, UploadProgressEvent } from "@vercel/blob";
 import { upload } from "@vercel/blob/client";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { useAccount } from "wagmi";
@@ -11,22 +12,23 @@ import { PhotoCapture } from "~~/components/photo-capture";
 import { QuestCard } from "~~/components/quest-card";
 import { Alert, AlertDescription, AlertTitle } from "~~/components/ui/alert";
 import { Button } from "~~/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "~~/components/ui/card";
 import { Progress } from "~~/components/ui/progress";
 import { classifyImage } from "~~/services/classification-agent";
-import { ClassificationResult } from "~~/services/classification-agent/types";
+import type { ClassificationResult } from "~~/services/classification-agent/types";
 import addUpload from "~~/src/actions/uploadActions";
 import addUser, { getUser } from "~~/src/actions/userActions";
-import { User } from "~~/src/db/schema";
+import type { User } from "~~/src/db/schema";
 
 export default function Home() {
-  // Get the user's wallet address and connection status
+  const router = useRouter();
   const { address, isConnected } = useAccount();
 
-  // State to store the uploaded image blob
   const [progress, setProgress] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
   const [blob, setBlob] = useState<PutBlobResult | null>(null);
   const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [uploadResult, setUploadResult] = useState<any>(null);
 
   const handleUpload = async (imageFile: File, classificationResult: ClassificationResult) => {
     console.log(imageFile);
@@ -40,58 +42,60 @@ export default function Home() {
     setError(null);
     setProgress(0);
 
-    // Get user from postgres
-    const user = await handleGetUser(address);
-    if (!user) {
-      console.log("No user");
-      return;
+    try {
+      const user = await handleGetUser(address);
+      if (!user) {
+        setError("Failed to get or create user. Please try again.");
+        return;
+      }
+
+      const blob = await handleUploadBlob(imageFile, address);
+      if (!blob) {
+        setError("Failed to upload image. Please try again.");
+        return;
+      }
+
+      const result = await handleUploadUserData(user, blob, classificationResult);
+      if (result) {
+        setUploadResult(result);
+        setTimeout(() => {
+          router.push(`/details/${result.id}`);
+        }, 3000);
+      } else {
+        setError("Failed to process upload. Please try again.");
+      }
+    } catch (error) {
+      console.error(error);
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsUploading(false);
     }
-
-    // Store image blob
-    const blob = await handleUploadBlob(imageFile, address);
-    if (!blob) {
-      console.log("No blob");
-      return;
-    }
-
-    // Upload user data to postgres
-    return await handleUploadUserData(user, blob, classificationResult);
-
-    // TODO: upload business data?
   };
 
-  // Handle the image capture event
   const handleImageClassification = async (imageFile: File, imageElement: HTMLImageElement) => {
-    // Pass to next module (MobileNet, upload, etc.)
-
-    // Classification Agent
-    const classificationResult = await classifyImage(imageElement, imageFile);
-
-    // Save image and user data to postgres
-    const isOk = await handleUpload(imageFile, classificationResult);
-
-    if (isOk) {
-      // TODO: call quest check step
-      // fetch("/api/quest/check", {
-      //   method: "POST",
+    try {
+      const classificationResult = await classifyImage(imageElement, imageFile);
+      await handleUpload(imageFile, classificationResult);
+    } catch (error) {
+      console.error(error);
+      setError("Failed to classify image. Please try again.");
     }
-
-    // TODO: redirect to detail  page
   };
 
   const handleRetry = () => {
     setBlob(null);
     setError(null);
     setProgress(0);
+    setUploadResult(null);
   };
 
   return (
     <div className="min-h-screen bg-background relative">
       <BackgroundPattern />
       <div className="relative z-10 flex flex-col min-h-screen">
-        <section className="flex-grow  flex items-center justify-center px-4">
-          <div className=" flex flex-col justify-center max-w-md space-y-8">
-            {!blob && !isUploading && <PhotoCapture onImageCaptured={handleImageClassification} />}
+        <section className="flex-grow flex items-center justify-center px-4">
+          <div className="flex flex-col justify-center max-w-md space-y-8">
+            {!blob && !isUploading && !uploadResult && <PhotoCapture onImageCaptured={handleImageClassification} />}
 
             {isUploading && (
               <div className="text-center">
@@ -109,7 +113,7 @@ export default function Home() {
               </Alert>
             )}
 
-            {blob && (
+            {blob && !uploadResult && (
               <div className="space-y-4">
                 <div className="relative aspect-square rounded-lg overflow-hidden">
                   <Image src={blob.url || "/placeholder.svg"} alt="Captured image" fill className="object-cover" />
@@ -118,6 +122,18 @@ export default function Home() {
                   Capture Another Image
                 </Button>
               </div>
+            )}
+
+            {uploadResult && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Upload Successful!</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p>Your image has been uploaded and classified.</p>
+                  <p>Redirecting to details page...</p>
+                </CardContent>
+              </Card>
             )}
 
             <QuestCard
@@ -135,7 +151,6 @@ export default function Home() {
 
   async function handleGetUser(address: string) {
     try {
-      // Get the user Id from the db
       console.log("Getting user data");
       let user = await getUser(address);
       console.log(user);
@@ -143,16 +158,13 @@ export default function Home() {
         console.log("User not found, creating new user");
         user = await addUser(address);
         if (!user) {
-          setError("Failed to create user. Please try again.");
-          return;
+          throw new Error("Failed to create user");
         }
-        return user;
       }
       return user;
     } catch (error) {
       console.error(error);
-      setError("Failed to upload user data. Please try again.");
-      return;
+      throw new Error("Failed to get or create user");
     }
   }
 
@@ -174,39 +186,33 @@ export default function Home() {
       setBlob(newBlob);
       return newBlob;
     } catch (err) {
-      setError("Failed to save image. Please try again.");
       console.error(err);
-    } finally {
-      setIsUploading(false);
+      throw new Error("Failed to upload image");
     }
   }
 
   async function handleUploadUserData(user: User, newBlob: PutBlobResult, classificationResult: ClassificationResult) {
     try {
       console.log("Uploading user data");
-      // Update the user's db entry
-
-      // pass in result of classification... but also pass in blob results
-
       const uploadResult = await addUpload({
         userId: user.id,
         classificationJson: classificationResult?.className || "",
         imageUrl: newBlob.url,
-        metadata: "Spring Birds", // TODO: Update this
-        status: "pending", // TODO: Update this
-        location: [0, 0], // TODO: Update this
-        season: "spring", // TODO: Update this
+        metadata: "Spring Birds",
+        status: "pending",
+        location: [0, 0],
+        season: "spring",
         createdAt: new Date(),
         photoTakenAt: new Date(),
         updatedAt: new Date(),
-        questId: user.id, // TODO: Update this
+        questId: user.id,
       });
 
       console.log(uploadResult);
       return uploadResult;
     } catch (error) {
       console.error(error);
-      setError("Failed to upload user data. Please try again.");
+      throw new Error("Failed to upload user data");
     }
   }
 }
