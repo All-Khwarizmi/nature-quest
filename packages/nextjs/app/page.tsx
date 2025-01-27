@@ -8,8 +8,8 @@ import { upload } from "@vercel/blob/client";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { useAccount } from "wagmi";
 import { BackgroundPattern } from "~~/components/background-pattern";
+import { PendingQuests } from "~~/components/pending-quests";
 import { PhotoCapture } from "~~/components/photo-capture";
-import { QuestCard } from "~~/components/quest-card";
 import { Alert, AlertDescription, AlertTitle } from "~~/components/ui/alert";
 import { Button } from "~~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~~/components/ui/card";
@@ -136,13 +136,7 @@ export default function Home() {
               </Card>
             )}
 
-            <QuestCard
-              title="Spot Spring Birds"
-              description="Find and photograph 3 different spring migratory birds in your area"
-              progress={1}
-              total={3}
-              dueDate="2 days left"
-            />
+            {address && <PendingQuests userAddress={address} />}
           </div>
         </section>
       </div>

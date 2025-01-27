@@ -16,3 +16,5 @@ export async function getUploadsByUserId(userAddress: string) {
   }
   return await db.select().from(uploads).where(eq(uploads.userId, userId));
 }
+
+
