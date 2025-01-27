@@ -1,7 +1,8 @@
 "use server";
 
 import { db } from "../db/drizzle";
-import { Upload, uploads, users } from "../db/schema";
+import { Upload, uploads } from "../db/schema";
+import { getUserByAddress } from "./userActions";
 import { eq } from "drizzle-orm";
 
 export default async function addUpload(upload: Omit<Upload, "id">) {
@@ -9,7 +10,7 @@ export default async function addUpload(upload: Omit<Upload, "id">) {
 }
 
 export async function getUploadsByUserId(userAddress: string) {
-  const userId = (await db.select().from(users).where(eq(users.address, userAddress)))[0].id;
+  const userId = (await getUserByAddress(userAddress)).id;
   if (userId.length === 0) {
     return [];
   }
