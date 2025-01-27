@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract NatureToken is ERC20, Ownable {
-    address public authorizedMinter;
+    address public authorizedMinter; //Rewards agent is the authorized minter and can mint the required tokens to their wallet address 
     
     constructor(address _authorizedMinter) ERC20("NATURE", "NTR") Ownable(msg.sender) {
         require(_authorizedMinter != address(0), "Authorized minter cannot be zero address");
