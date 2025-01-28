@@ -21,5 +21,5 @@ export type Quest = QuestBase & {
 
 export interface IQuestAgent {
     generateQuest: () => Promise<QuestBase>;
-    // checkQuestCompleted: () => boolean; TODO: IMPLEMENT
+    checkQuestCompleted: <T>(arg0: T, arg1: T) => boolean;
 }
