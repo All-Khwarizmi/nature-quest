@@ -1,18 +1,21 @@
-import { QuestAgent } from "./agent"
+import { QuestAgent } from "./agent";
 import { Quest, QuestBase } from "./types";
 
 const questAgent = new QuestAgent();
 
-export const generateQuest = async(): Promise<QuestBase> => {
-    try {
-        return await questAgent.generateQuest(); 
-    } catch (error) {
-        throw new Error('error in generateQuest index.ts')
-    }
+export const generateQuest = async (): Promise<QuestBase> => {
+  try {
+    return await questAgent.generateQuest();
+  } catch (error) {
+    throw new Error("error in generateQuest index.ts");
+  }
 };
 
-export const isQuestCompleted = (captureClassification: Quest["classification"], pendingQuestClassification: Quest["classification"]): boolean => {
-    return questAgent.isQuestCompleted(captureClassification, pendingQuestClassification)
+export const isQuestCompleted = (
+  captureClassification: Quest["classification"],
+  pendingQuestClassification: Quest["classification"],
+): boolean => {
+  return questAgent.isQuestCompleted(captureClassification, pendingQuestClassification);
 };
 
 // TODO: properly type pendingQuests.  In
@@ -29,12 +32,15 @@ export const isQuestCompleted = (captureClassification: Quest["classification"],
 // }
 
 // utility function
-export const checkIfQuestsAreCompleted = (captureClassification: Quest["classification"], pendingQuests: Quest["title"][]) => {
-    pendingQuests.forEach((pendingQuest: Quest["classification"]) => {
-        if (isQuestCompleted(captureClassification, pendingQuest)) {
-            console.log('Quest was completed, call reward agent here')
-            // TODO: in the 'users' table, move pendingQuest into completed quest array in the users 
-            // optional: generateQuest()
-        }
-    })
-}
+export const checkIfQuestsAreCompleted = (
+  captureClassification: Quest["classification"],
+  pendingQuests: Quest["title"][],
+) => {
+  pendingQuests.forEach((pendingQuest: Quest["classification"]) => {
+    if (isQuestCompleted(captureClassification, pendingQuest)) {
+      console.log("Quest was completed, call reward agent here");
+      // TODO: in the 'users' table, move pendingQuest into completed quest array in the users
+      // optional: generateQuest()
+    }
+  });
+};

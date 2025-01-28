@@ -11,8 +11,8 @@ export type TEMPORARY_User = {
   createdAt: Date; // Timestamp for when the user was created
   updatedAt: Date; // Timestamp for when the user was last updated
   quests: {
-      pending: string[]; // Array of quest IDs that are pending
-      completed: string[]; // Array of quest IDs that have been completed
+    pending: string[]; // Array of quest IDs that are pending
+    completed: string[]; // Array of quest IDs that have been completed
   };
   totalQuestsCompleted: number; // Total number of quests completed
   lastQuestCompletedAt?: Date | null; // Optional timestamp for the last quest completed
@@ -41,24 +41,24 @@ export async function getUserByAddress(address: string) {
 }
 
 export async function moveQuestToCompleted(address: string, questToMove: string): Promise<TEMPORARY_User[]> {
-  const user = await getUser(address) as TEMPORARY_User;
+  const user = (await getUser(address)) as TEMPORARY_User;
   if (!user) {
-      throw new Error('User not found');
+    throw new Error("User not found");
   }
 
   // Check if the quest is in the pending array
   if (!user.quests.pending.includes(questToMove)) {
-      throw new Error('Quest not found in pending list');
+    throw new Error("Quest not found in pending list");
   }
 
   const updatedQuests = {
-      completed: user.quests.completed.concat(questToMove),
-      pending: user.quests.pending.filter(quest => quest !== questToMove)
+    completed: user.quests.completed.concat(questToMove),
+    pending: user.quests.pending.filter(quest => quest !== questToMove),
   };
 
-  return await db
-      .update(users)
-      .set({ quests: updatedQuests })
-      .where(eq(users.address, address))
-      .returning() as TEMPORARY_User[];
+  return (await db
+    .update(users)
+    .set({ quests: updatedQuests })
+    .where(eq(users.address, address))
+    .returning()) as TEMPORARY_User[];
 }

@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   // if yes, call the reward agent
   //? otherwise, use the user "upload" id to update the resource in db: status = rejected
 
-  console.log()
+  console.log();
 
   //~ Reward Agent
 
