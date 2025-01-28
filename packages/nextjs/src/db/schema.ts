@@ -6,7 +6,13 @@ export const users = pgTable("users", {
   address: text("address").notNull().unique(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-  quests: jsonb("quests").notNull(),
+  quests: jsonb("quests").notNull().default({
+    pending: [], // Array of quest IDs
+    completed: [], // Array of completed quest IDs
+  }),
+  // Optional fields for progression/gamification
+  totalQuestsCompleted: integer("total_quests_completed").notNull().default(0),
+  lastQuestCompletedAt: timestamp("last_quest_completed_at"),
 });
 
 // // Companies/Organizations that can sponsor quests
@@ -27,7 +33,7 @@ export const quests = pgTable("quests", {
   userCount: integer("user_count"),
   maxUsers: integer("max_users"),
   description: text("description").notNull(),
-  reward: integer("reward").notNull(),
+  reward: integer("reward").notNull(), // amount of tokens to reward
   // isPublic: boolean("is_public").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow(),
   expiresAt: timestamp("expires_at"),

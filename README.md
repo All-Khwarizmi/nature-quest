@@ -1,22 +1,18 @@
 # Nature Quest
 
+
 AI-powered citizen science platform with blockchain rewards.
 
-### TODO
-// POINTS 5
-- [ ] Redirect user to detail page after data upload? (image-detail/id)
-- [ ] Implement detail page
-- [ ] Show reward badge on detail page
-- [ ] Implement gallery page
-- [ ] Implement rewards page
-- [ ] Add reward table to postgres
-- [ ] Implement assign quest card on main page
-<!-- - [ ] Try google vision api -->
-- [ ] Implement token ERC20 reward
-- [ ] Implement check step
-- [ ] Implement reward agent
-- [ ] Deploy token to mode 
-- [ ] Audit token contract
+### Reward / Quests logic
+
+- Quests contain a reward amount and a classification (e.g. a specific species of animal)
+- When needed the Reward Agent (or next step in the agentik flow) could select the most appropriate next quests to assign to the user
+- User Table contains
+  - completed quests
+  - pending quests
+- Whenever a user uploads an image, if it matches a quest,
+  -  the user is added to the quest table (or the quest is updated)
+  -  update the user table
 
 # 🏄‍♂️
 

@@ -1,39 +1,34 @@
-import { Card, CardContent, CardHeader } from "./ui/card";
-import { Progress } from "./ui/progress";
+import { Badge } from "~~/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "~~/components/ui/card";
+import type { Quest } from "~~/src/db/schema";
 
 interface QuestCardProps {
-  title: string;
-  description: string;
-  progress: number;
-  total: number;
-  dueDate: string;
-}
-interface QuestCardProps {
-  title: string;
-  description: string;
-  progress: number;
-  total: number;
-  dueDate: string;
+  quest: Quest;
+  isCompleted: boolean;
+  onClick: () => void;
 }
 
-export function QuestCard({ title, description, progress, total, dueDate }: QuestCardProps) {
-  const progressPercentage = (progress / total) * 100;
-
+export function QuestCard({ quest, isCompleted, onClick }: QuestCardProps) {
   return (
-    <Card className="w-full bg-card">
-      <CardHeader className="pb-3">
-        <h2 className="text-xl font-bold text-card-foreground">{title}</h2>
+    <Card
+      className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${
+        isCompleted ? "bg-green-50" : "hover:scale-105"
+      }`}
+      onClick={onClick}
+    >
+      <CardHeader>
+        <CardTitle className="flex justify-between items-center">
+          <span className="text-lg font-bold text-[#2C5530] truncate">{quest?.title}</span>
+          <Badge variant={isCompleted ? "approved" : "secondary"}>{isCompleted ? "Completed" : "Available"}</Badge>
+        </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <p className="text-sm text-muted-foreground">{description}</p>
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-card-foreground font-medium">
-              {progress} of {total} completed
-            </span>
-            <span className="text-muted-foreground">{dueDate}</span>
-          </div>
-          <Progress value={progressPercentage} className="h-2" />
+      <CardContent>
+        <p className="text-sm text-gray-600 mb-2 line-clamp-2">{quest?.description}</p>
+        <div className="flex justify-between items-center text-sm">
+          <span className="font-semibold text-[#8B4513]">Reward: {quest?.reward} tokens</span>
+          <span className="text-gray-500">
+            {quest?.userCount ?? 0}/{quest?.maxUsers ?? "∞"} completed
+          </span>
         </div>
       </CardContent>
     </Card>
