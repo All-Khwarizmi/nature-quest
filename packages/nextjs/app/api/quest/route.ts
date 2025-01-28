@@ -9,16 +9,30 @@ import { generateText } from "ai";
 import { Account, createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { hardhat } from "viem/chains";
+import { getQuests } from "~~/src/actions/questActions";
+import { Quest } from "~~/src/db/schema";
 
 // Quest Check Module
 export async function POST(req: NextRequest) {
   //~ Check step
-  const { userAddress } = await req.json();
-  // TODO:
-  // pass the classification json (string), user address (evm/mode), user "upload" (from src/db/schema) id
+  const { userAddress, classificationJson, uploadId } = await req.json();
+
   // iterate over the quests
+  const quests = await getQuests();
+  const completedQuests: Quest[] = [];
+
   // check if any of the quests match the classification
+  quests.forEach(quest => {
+    if (quest.classification === classificationJson) {
+      completedQuests.push(quest);
+    }
+  });
+
   // if yes, call the reward agent
+  if (completedQuests.length > 0) {
+    // TODO: call reward agent
+    console.log("Quests completed:", completedQuests);
+  }
   //? otherwise, use the user "upload" id to update the resource in db: status = rejected
 
   console.log();
