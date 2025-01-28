@@ -3,6 +3,7 @@ import { IQuestAgent, Quest, QuestBase } from "./types";
 import { generateText } from "ai";
 import { boolean } from "drizzle-orm/mysql-core";
 import { ClassificationResult } from "../classification-agent/types";
+import { isQuestCompleted } from ".";
 
 export class QuestAgent implements IQuestAgent {
     private readonly BOTANICAL_KEYWORDS = [
@@ -120,8 +121,14 @@ export class QuestAgent implements IQuestAgent {
         }
     }
 
-    checkQuestCompleted(classification: ClassificationResult): boolean {
-        
-        return 
+    isQuestCompleted(captureClassification: Quest["classification"], dbClassification: Quest["classification"]): boolean {
+        if (captureClassification === dbClassification) {
+            return true;
+        } 
+        return false;
+    }
+
+    markQuestAsCompleted() {
+        // take in a quest, and a user.  
     }
 }

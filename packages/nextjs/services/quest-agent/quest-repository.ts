@@ -11,6 +11,7 @@ export class QuestRepository {
         this.db = db;
     }
 
+    // right now, this is done on a per user basis, and needs to be changed to be on a system basis
     async createQuest(quest: QuestBase): Promise<Quest> {
         try {
             const [newQuest] = await db
