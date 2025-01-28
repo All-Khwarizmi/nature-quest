@@ -1,5 +1,5 @@
 import { openai } from "@ai-sdk/openai";
-import { IQuestAgent, Quest } from "./types";
+import { IQuestAgent, Quest, QuestBase } from "./types";
 import { generateText } from "ai";
 
 export class QuestAgent implements IQuestAgent {
@@ -103,7 +103,7 @@ export class QuestAgent implements IQuestAgent {
     }
 
 
-    async generateQuest(): Promise<Omit<Quest, "id">> {
+    async generateQuest(): Promise<QuestBase> {
         try {
             const targetClassification = this.pickTargetClassification();
             const title = this.generateTitle(targetClassification);
