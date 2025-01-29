@@ -47,9 +47,11 @@ export async function updateCompletedUserQuests(address: string, completedQuests
 
   const user = await getUser(address) as TEMPORARY_User;
   if (!user) throw new Error("User not found");
+  console.log(user, 'this is user from getUser()')
 
   // Remove completed quests from pending
   console.log(user.quests.pending, 'current pending array')
+  console.log(user.quests.completed, 'current completed array')
   const updatedPending = user.quests.pending.filter(q => !completedQuests.includes(q));
   const updatedCompleted = user.quests.completed.concat(completedQuests);
   console.log(user.quests.pending, 'pending array after update')
