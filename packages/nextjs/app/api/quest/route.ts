@@ -1,6 +1,5 @@
 import { NextRequest } from "next/server";
 import { PlantClassificationSchema } from "./classification-agent";
-// import { ClassificationAgent } from "./classification-agent";
 import { AGENT_ADR, AGENT_PRIVATE_KEY, CONTRACT_ADDRESS } from "./constants";
 import { RewardAgent } from "./reward-agent";
 import { TOOLS } from "./tools";
@@ -8,6 +7,7 @@ import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import { QuestAgent } from "~~/services/quest-agent/agent";
 import { QuestValidationAgent } from "~~/services/quest-validation-agent/quest-validation-agent";
+import { TEMPORARY_User, getUserByAddress } from "~~/src/actions/userActions";
 import { db } from "~~/src/db/drizzle";
 
 const RequestSchema = z.object({
@@ -18,41 +18,31 @@ const RequestSchema = z.object({
 // Quest Check Module
 export async function POST(req: NextRequest) {
   try {
-    // const formData = await req.formData();
-    // const file = formData.get("file") as File;
-
-    // const agent = new ClassificationAgent(openai("gpt-4o"));
-    // const result = await agent.classifyImage(file);
-
-    console.log("POST request received");
     const requestBody = await req.json();
-    console.log(requestBody);
 
+    // Validate request body
     const isRequestValid = RequestSchema.safeParse(requestBody);
 
-    // Change params schema check
-    // store into blob storage
-    // store user data
     if (!isRequestValid.success) {
       console.error(isRequestValid.error.message);
       return Response.json({ error: isRequestValid.error.message }, { status: 400 });
     }
 
-    console.log("Request data validated", isRequestValid.data);
     const { userAddress, classificationJson, uploadId } = isRequestValid.data;
-    console.log({ userAddress, classificationJson, uploadId });
 
     // iterate over the quests and check if any of them match the classification
     const MODEL = openai("gpt-4o");
+
     const validationAgent = new QuestValidationAgent(MODEL);
+
     const questAgent = new QuestAgent(db, validationAgent);
 
-    const questsCompleted = await questAgent.checkIfQuestsAreCompleted(classificationJson, userAddress);
+    const user = (await getUserByAddress(userAddress)) as TEMPORARY_User;
 
-    console.log(questsCompleted, "quests completed");
+    const completedQuest = await questAgent.checkIfQuestsAreCompleted(classificationJson, user);
 
     //* if yes, call the reward agent
-    if (questsCompleted) {
+    if (completedQuest) {
       if (!AGENT_PRIVATE_KEY || !AGENT_ADR || !CONTRACT_ADDRESS) {
         return Response.json({ error: "Missing environment variables" }, { status: 500 });
       }
@@ -71,9 +61,6 @@ export async function POST(req: NextRequest) {
       const structuredResponsePrompt = RewardAgent.generateRewardResponsePrompt(tx);
 
       const response = await rewardAgent.generateStructuredResponse(structuredResponsePrompt);
-      console.log(structuredResponsePrompt);
-
-      console.log("Quests completed:", questsCompleted);
 
       // If the quests are completed and the reward h,as been sent to the user mark them as completed in the user's quests
       if (response.result) {

@@ -3,7 +3,6 @@ import { IQuestAgent, Quest, QuestBase } from "./types";
 import { openai } from "@ai-sdk/openai";
 import { generateText } from "ai";
 import { eq } from "drizzle-orm";
-import { z } from "zod";
 import { PlantClassification } from "~~/app/api/quest/classification-agent";
 import { TEMPORARY_User } from "~~/src/actions/userActions";
 import { DB, db } from "~~/src/db/drizzle";
@@ -179,11 +178,9 @@ export class QuestAgent implements IQuestAgent {
    * @param captureClassification - The classification captured by the user
    * @returns An array of completed quests
    */
-  async checkIfQuestsAreCompleted(captureClassification: PlantClassification, userAddress: string) {
+  async checkIfQuestsAreCompleted(captureClassification: PlantClassification, user: TEMPORARY_User) {
     try {
       const allQuests = await this.initializeQuests();
-
-      const [user] = (await this._db.select().from(users).where(eq(users.address, userAddress))) as TEMPORARY_User[];
 
       if (!user) return null;
 

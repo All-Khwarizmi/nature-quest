@@ -19,7 +19,7 @@ export function useSeasonAndLocation() {
         }
       });
     }
-  }, []);
+  }, [getLocationAndSeason, locationData]);
 
   console.log(locationData);
   async function getLocationAndSeason(): Promise<LocationAndSeason | null> {

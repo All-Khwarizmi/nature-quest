@@ -8,8 +8,8 @@ import { eq } from "drizzle-orm";
 export type TEMPORARY_User = {
   id: string; // UUID for the user ID
   address: string; // User's wallet address
-  createdAt: Date; // Timestamp for when the user was created
-  updatedAt: Date; // Timestamp for when the user was last updated
+  createdAt: Date | null; // Timestamp for when the user was created
+  updatedAt: Date | null; // Timestamp for when the user was last updated
   quests: {
     pending: string[]; // Array of quest IDs that are pending
     completed: string[]; // Array of quest IDs that have been completed

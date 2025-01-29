@@ -17,6 +17,18 @@ export class QuestValidationAgent {
   constructor(model: LanguageModelV1) {
     this._model = model;
   }
+
+  /**
+   * Validates the submission against the available quests
+   * @param submission - The submission to validate
+   * @param userQuests - The user's quests
+   * @param availableQuests - The available quests
+   * @returns The validation result
+   * @example
+   * const result = await validationAgent.validateSubmission(submission, userQuests, availableQuests);
+   * console.log(result);
+   * // { isCompleted: true, questId: '123', confidence: 0.8, explanation: 'Quest 123 is the best match.' }
+   */
   async validateSubmission(
     submission: PlantClassification,
     userQuests: { pending: string[]; completed: string[] },
@@ -43,8 +55,6 @@ export class QuestValidationAgent {
         - Available Quests: ${JSON.stringify(availableQuests)}
         `,
       });
-
-      // Parse the structured response
 
       return result.object;
     } catch (error) {
