@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import useSeasonAndLocation from "./_components/hooks/useSeasonAndLocation";
 import { PlantClassification } from "./api/quest/classification-agent";
 import type { PutBlobResult, UploadProgressEvent } from "@vercel/blob";
 import { upload } from "@vercel/blob/client";
@@ -28,6 +29,8 @@ export default function Home() {
   const [blob, setBlob] = useState<PutBlobResult | null>(null);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [uploadResult, setUploadResult] = useState<any>(null);
+
+  const { locationData } = useSeasonAndLocation();
 
   const handleUpload = async (imageFile: File, classificationResult: PlantClassification) => {
     console.log(imageFile);
@@ -255,12 +258,12 @@ export default function Home() {
         imageUrl: newBlob.url,
         metadata: JSON.stringify(classificationResult), //TODO: change this
         status: "pending",
-        location: [0, 0],
-        season: "spring",
+        location: [locationData?.coordinates.latitude || 0, locationData?.coordinates.longitude || 0],
+        season: locationData?.season || "Unknown Season",
         createdAt: new Date(),
         photoTakenAt: new Date(),
         updatedAt: new Date(),
-        questId: user.id,
+        questId: null,
       });
 
       console.log(uploadResult);
