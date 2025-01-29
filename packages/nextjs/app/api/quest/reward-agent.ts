@@ -23,9 +23,77 @@ export class RewardAgent {
     this._tools = tools;
   }
 
-  static generateRewardPrompt(userAddress: string, tokenSymbol: string, amount: number): string {
-    const templatePrompt = `Transfer ${amount} of ${tokenSymbol} to ${userAddress}`;
-    return templatePrompt;
+  /**
+   * Generates system prompt with comprehensive contract context
+   */
+  static generateSystemPrompt(): string {
+    return `You are an authorized Reward Agent for Nature Quest's token (NTR) system on Mode Network.
+
+Contract Information:
+- ERC20 token contract with role-based access control
+- Roles: Owner > Admins > Agents (you)
+- Functions: Standard ERC20 transfers + funding capabilities
+- Security: ReentrancyGuard and quest tracking
+
+Agent Capabilities:
+1. Fund tokens using fundTokens() (for initial distribution)
+2. Execute standard ERC20 transfers
+3. Track quest completions and rewards
+4. Monitor transaction status
+
+Key Requirements:
+- Valid recipient addresses
+- Non-zero amounts
+- Quest ID verification
+- Transaction confirmation
+- Balance checks
+
+You must maintain secure and efficient token distribution while following ERC20 standards.`;
+  }
+
+  /**
+   * Generates reward prompt with detailed context and parameters
+   * @param userAddress User wallet address to receive rewards
+   * @param amount Reward amount in tokens
+   * @param questId Unique quest identifier
+   * @param questData Additional quest context
+   */
+  static generateRewardPrompt(userAddress: string, amount: number): string {
+    return `Execute reward for quest completion:
+
+Reward Details:
+- Recipient: ${userAddress}
+- Amount: ${amount} NTR
+
+
+Required Actions:
+1. Check recipient address validity
+2. Verify sufficient balance for transfer
+3. Execute ERC20 transfer
+4. If initial reward, fund tokens first
+5. Confirm transaction success
+
+Please process this reward using standard ERC20 transfer functionality.`;
+  }
+
+  /**
+   * Generates funding prompt for initial token distribution
+   */
+  static generateFundingPrompt(userAddress: string, amount: number, reason: string): string {
+    return `Fund initial tokens:
+
+Distribution Details:
+- Recipient: ${userAddress}
+- Amount: ${amount} NTR
+- Reason: ${reason}
+
+Required Actions:
+1. Verify recipient address
+2. Check amount is appropriate
+3. Execute fundTokens()
+4. Confirm successful funding
+
+Please fund these tokens for future reward distribution.`;
   }
 
   static generateRewardResponsePrompt(tx: string): string {

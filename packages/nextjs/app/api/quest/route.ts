@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
 
       const AMOUNT = questAgent.getRewardAmount();
 
-      const templatePrompt = RewardAgent.generateRewardPrompt(userAddress, "SE2", AMOUNT);
+      const templatePrompt = RewardAgent.generateRewardPrompt(userAddress, AMOUNT);
 
       // Call the reward agent to reward the user
       const tx = await rewardAgent.rewardUser(templatePrompt);
