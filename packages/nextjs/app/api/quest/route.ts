@@ -17,70 +17,79 @@ const RequestSchema = z.object({
 });
 // Quest Check Module
 export async function POST(req: NextRequest) {
-  // const formData = await req.formData();
-  // const file = formData.get("file") as File;
+  try {
+    // const formData = await req.formData();
+    // const file = formData.get("file") as File;
 
-  // const agent = new ClassificationAgent(openai("gpt-4o"));
-  // const result = await agent.classifyImage(file);
+    // const agent = new ClassificationAgent(openai("gpt-4o"));
+    // const result = await agent.classifyImage(file);
 
-  const requestBody = await req.json();
+    console.log("POST request received");
+    const requestBody = await req.json();
+    console.log(requestBody);
 
-  const isRequestValid = RequestSchema.safeParse(requestBody);
+    const isRequestValid = RequestSchema.safeParse(requestBody);
 
-  // Change params schema check
-  // store into blob storage
-  // store user data
-  if (!isRequestValid.success) {
-    return Response.json({ error: isRequestValid.error.message }, { status: 400 });
-  }
-
-  const { userAddress, classificationJson, uploadId } = isRequestValid.data;
-  console.log({ userAddress, classificationJson, uploadId });
-
-  // iterate over the quests and check if any of them match the classification
-  const MODEL = openai("gpt-4o");
-  const validationAgent = new QuestValidationAgent(MODEL);
-  const questAgent = new QuestAgent(db, validationAgent);
-
-  const questsCompleted = await questAgent.checkIfQuestsAreCompleted(classificationJson, userAddress);
-
-  console.log(questsCompleted, "quests completed");
-
-  //* if yes, call the reward agent
-  if (questsCompleted) {
-    if (!AGENT_PRIVATE_KEY || !AGENT_ADR || !CONTRACT_ADDRESS) {
-      return Response.json({ error: "Missing environment variables" }, { status: 500 });
+    // Change params schema check
+    // store into blob storage
+    // store user data
+    if (!isRequestValid.success) {
+      console.error(isRequestValid.error.message);
+      return Response.json({ error: isRequestValid.error.message }, { status: 400 });
     }
 
-    //? We need to make sure that the user has enough SE2 to transfer or the agent should take care of it?
-    const rewardAgent = new RewardAgent(TOOLS, MODEL);
+    console.log("Request data validated", isRequestValid.data);
+    const { userAddress, classificationJson, uploadId } = isRequestValid.data;
+    console.log({ userAddress, classificationJson, uploadId });
 
-    const AMOUNT = questAgent.getRewardAmount();
+    // iterate over the quests and check if any of them match the classification
+    const MODEL = openai("gpt-4o");
+    const validationAgent = new QuestValidationAgent(MODEL);
+    const questAgent = new QuestAgent(db, validationAgent);
 
-    const templatePrompt = RewardAgent.generateRewardPrompt(userAddress, "SE2", AMOUNT);
+    const questsCompleted = await questAgent.checkIfQuestsAreCompleted(classificationJson, userAddress);
 
-    // Call the reward agent to reward the user
-    const tx = await rewardAgent.rewardUser(templatePrompt);
+    console.log(questsCompleted, "quests completed");
 
-    // Call the llm to generate a structured response
-    const structuredResponsePrompt = RewardAgent.generateRewardResponsePrompt(tx);
+    //* if yes, call the reward agent
+    if (questsCompleted) {
+      if (!AGENT_PRIVATE_KEY || !AGENT_ADR || !CONTRACT_ADDRESS) {
+        return Response.json({ error: "Missing environment variables" }, { status: 500 });
+      }
 
-    const response = await rewardAgent.generateStructuredResponse(structuredResponsePrompt);
-    console.log(structuredResponsePrompt);
+      //? We need to make sure that the user has enough SE2 to transfer or the agent should take care of it?
+      const rewardAgent = new RewardAgent(TOOLS, MODEL);
 
-    console.log("Quests completed:", questsCompleted);
+      const AMOUNT = questAgent.getRewardAmount();
 
-    // If the quests are completed and the reward h,as been sent to the user mark them as completed in the user's quests
-    if (response.result) {
-      await questAgent.markQuestAsCompleted(userAddress, uploadId);
+      const templatePrompt = RewardAgent.generateRewardPrompt(userAddress, "SE2", AMOUNT);
+
+      // Call the reward agent to reward the user
+      const tx = await rewardAgent.rewardUser(templatePrompt);
+
+      // Call the llm to generate a structured response
+      const structuredResponsePrompt = RewardAgent.generateRewardResponsePrompt(tx);
+
+      const response = await rewardAgent.generateStructuredResponse(structuredResponsePrompt);
+      console.log(structuredResponsePrompt);
+
+      console.log("Quests completed:", questsCompleted);
+
+      // If the quests are completed and the reward h,as been sent to the user mark them as completed in the user's quests
+      if (response.result) {
+        await questAgent.markQuestAsCompleted(userAddress, uploadId);
+      }
+
+      return Response.json({ response });
     }
 
-    return Response.json({ response });
+    console.log("No quests completed");
+    //? otherwise, use the user "upload" id to update the resource in db: status = rejected
+    return Response.json({ status: "Not Quests Completed" });
+  } catch (error) {
+    console.error(error);
+    return Response.json({ error: "Something went wrong" }, { status: 500 });
   }
-
-  console.log("No quests completed");
-  //? otherwise, use the user "upload" id to update the resource in db: status = rejected
-  return Response.json({ status: "Not Quests Completed" });
 }
 
 // Onboarding flow

@@ -15,7 +15,6 @@ import { Alert, AlertDescription, AlertTitle } from "~~/components/ui/alert";
 import { Button } from "~~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~~/components/ui/card";
 import { Progress } from "~~/components/ui/progress";
-import type { ClassificationResult } from "~~/services/classification-agent/types";
 import addUpload from "~~/src/actions/uploadActions";
 import addUser, { getUser } from "~~/src/actions/userActions";
 import type { User } from "~~/src/db/schema";
@@ -69,6 +68,10 @@ export default function Home() {
 
   const handleImageClassification = async (imageFile: File, imageElement: HTMLImageElement) => {
     try {
+      if (!isConnected || !address) {
+        setError("Please connect your wallet first");
+        return;
+      }
       // Create FormData for file upload
       const formData = new FormData();
       formData.append("file", imageFile);
@@ -112,8 +115,8 @@ export default function Home() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userAddress: uploadResult.userId,
-          classificationJson: classificationResult.category,
+          userAddress: address,
+          classificationJson: classificationResult,
           confidence: classificationResult.confidence,
           species: classificationResult.species,
           uploadId: uploadResult.id,

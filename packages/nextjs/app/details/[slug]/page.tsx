@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { AlertCircle, Loader2 } from "lucide-react";
+import { PlantClassification } from "~~/app/api/quest/classification-agent";
 import { Alert, AlertDescription, AlertTitle } from "~~/components/ui/alert";
 import { Badge } from "~~/components/ui/badge";
 import { Button } from "~~/components/ui/button";
@@ -15,7 +16,7 @@ interface UploadData {
   userId: string;
   questId?: string;
   imageUrl: string;
-  classificationJson: string;
+  classificationJson: PlantClassification;
   status: "pending" | "approved" | "rejected";
   location?: [number, number];
   season?: string;
@@ -112,7 +113,7 @@ export default function SpeciesDetailPage({ params }: { params: { slug: string }
 
           <div className="grid gap-8 md:grid-cols-3">
             <div className="md:col-span-2">
-              <h1 className="text-3xl font-bold text-[#2C5530] mb-2">{uploadData.classificationJson}</h1>
+              <h1 className="text-3xl font-bold text-[#2C5530] mb-2">{uploadData.classificationJson.species}</h1>
               {/* <p className="text-[#90EE90] text-lg mb-4">Confidence: {uploadData.classificationJson}%</p> */}
 
               <Tabs defaultValue="details" className="w-full">
@@ -146,7 +147,7 @@ export default function SpeciesDetailPage({ params }: { params: { slug: string }
                     </p>
                   )}
                 </TabsContent>
-                <TabsContent value="metadata" className="text-gray-700 leading-relaxed">
+                <TabsContent value="metadata" className="text-gray-700 leading-relaxed overflow-scroll">
                   <pre>{JSON.stringify(uploadData.metadata, null, 2)}</pre>
                 </TabsContent>
               </Tabs>

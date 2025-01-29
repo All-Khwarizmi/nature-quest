@@ -182,11 +182,14 @@ export class QuestAgent implements IQuestAgent {
   async checkIfQuestsAreCompleted(captureClassification: PlantClassification, userAddress: string) {
     try {
       const allQuests = await this.initializeQuests();
+
       const [user] = (await this._db.select().from(users).where(eq(users.address, userAddress))) as TEMPORARY_User[];
+
+      if (!user) return null;
 
       const validationResult = await this._validationAgent.validateSubmission(
         captureClassification,
-        user.quests,
+        user?.quests,
         allQuests,
       );
 
