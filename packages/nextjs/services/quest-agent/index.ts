@@ -32,7 +32,7 @@ export const isQuestCompleted = (captureClassification: Quest["classification"],
 export const checkIfQuestsAreCompleted = (captureClassification: Quest["classification"], pendingQuests: Quest["title"][]) => {
     pendingQuests.forEach((pendingQuest: Quest["classification"]) => {
         if (isQuestCompleted(captureClassification, pendingQuest)) {
-            console.log('Quest was completed, call reward agent here')
+            console.log(`Quest was completed ${captureClassification} and ${pendingQuest} match, call reward agent here`)
             // TODO: in the 'users' table, move pendingQuest into completed quest array in the users 
             // optional: generateQuest()
         }
