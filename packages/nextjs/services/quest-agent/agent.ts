@@ -127,8 +127,4 @@ export class QuestAgent implements IQuestAgent {
         } 
         return false;
     }
-
-    markQuestAsCompleted() {
-        // take in a quest, and a user.  
-    }
 }
