@@ -23,7 +23,7 @@ export default async function addUser(address: string) {
   return (
     await db
       .insert(users)
-      .values({ address: address, quests: { pending: ["Tree Spotter"], completed: ["Bird Basics"] } })
+      .values({ address: address, quests: { pending: [], completed: [] } })
       .returning()
   )[0];
 }
