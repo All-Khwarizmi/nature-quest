@@ -3,7 +3,6 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { NatureToken } from "../typechain-types";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
-import { bigint } from "hardhat/internal/core/params/argumentTypes";
 
 describe("NatureToken", function () {
   // Contracts
