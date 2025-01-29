@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { PlantClassification } from "./api/quest/classification-agent";
 import type { PutBlobResult, UploadProgressEvent } from "@vercel/blob";
 import { upload } from "@vercel/blob/client";
 import { AlertCircle, Loader2 } from "lucide-react";
@@ -14,7 +15,6 @@ import { Alert, AlertDescription, AlertTitle } from "~~/components/ui/alert";
 import { Button } from "~~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~~/components/ui/card";
 import { Progress } from "~~/components/ui/progress";
-import { classifyImage } from "~~/services/classification-agent";
 import type { ClassificationResult } from "~~/services/classification-agent/types";
 import addUpload from "~~/src/actions/uploadActions";
 import addUser, { getUser } from "~~/src/actions/userActions";
@@ -30,7 +30,7 @@ export default function Home() {
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [uploadResult, setUploadResult] = useState<any>(null);
 
-  const handleUpload = async (imageFile: File, classificationResult: ClassificationResult) => {
+  const handleUpload = async (imageFile: File, classificationResult: PlantClassification) => {
     console.log(imageFile);
 
     if (!isConnected || !address) {
@@ -73,19 +73,23 @@ export default function Home() {
       const formData = new FormData();
       formData.append("file", imageFile);
 
+      // Check size limit of file 4.5MB
+      if (imageFile.size > 4500000) {
+        setError("File size exceeds the limit of 4.5MB");
+        return;
+      }
+
       // First, get classification from our AI endpoint
       const classificationResponse = await fetch("/api/classify", {
         method: "POST",
         body: formData,
-        // Longer timeout for AI processing
-        // signal: AbortSignal.timeout(10000), // 10s timeout
       });
 
       if (!classificationResponse.ok) {
         throw new Error("Classification failed");
       }
 
-      const classificationResult = await classificationResponse.json();
+      const classificationResult = (await classificationResponse.json()) as PlantClassification;
 
       console.log({ classificationResult });
 
@@ -114,7 +118,6 @@ export default function Home() {
           species: classificationResult.species,
           uploadId: uploadResult.id,
         }),
-        // signal: AbortSignal.timeout(2000), // 2s timeout
       });
 
       if (!questResponse.ok) {
@@ -240,14 +243,14 @@ export default function Home() {
     }
   }
 
-  async function handleUploadUserData(user: User, newBlob: PutBlobResult, classificationResult: ClassificationResult) {
+  async function handleUploadUserData(user: User, newBlob: PutBlobResult, classificationResult: PlantClassification) {
     try {
       console.log("Uploading user data");
       const uploadResult = await addUpload({
         userId: user.id,
-        classificationJson: classificationResult?.className || "",
+        classificationJson: JSON.stringify(classificationResult), //TODO: change to classificationJson
         imageUrl: newBlob.url,
-        metadata: "Spring Birds",
+        metadata: JSON.stringify(classificationResult), //TODO: change this
         status: "pending",
         location: [0, 0],
         season: "spring",

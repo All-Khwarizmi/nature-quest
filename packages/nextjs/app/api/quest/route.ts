@@ -1,23 +1,35 @@
 import { NextRequest } from "next/server";
+import { PlantClassificationSchema } from "./classification-agent";
+// import { ClassificationAgent } from "./classification-agent";
 import { AGENT_ADR, AGENT_PRIVATE_KEY, CONTRACT_ADDRESS } from "./constants";
 import { RewardAgent } from "./reward-agent";
 import { TOOLS } from "./tools";
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import { QuestAgent } from "~~/services/quest-agent/agent";
+import { QuestValidationAgent } from "~~/services/quest-validation-agent/quest-validation-agent";
 import { db } from "~~/src/db/drizzle";
 
 const RequestSchema = z.object({
   userAddress: z.string(),
-  classificationJson: z.string(),
+  classificationJson: PlantClassificationSchema,
   uploadId: z.string(),
 });
 // Quest Check Module
 export async function POST(req: NextRequest) {
+  // const formData = await req.formData();
+  // const file = formData.get("file") as File;
+
+  // const agent = new ClassificationAgent(openai("gpt-4o"));
+  // const result = await agent.classifyImage(file);
+
   const requestBody = await req.json();
 
   const isRequestValid = RequestSchema.safeParse(requestBody);
 
+  // Change params schema check
+  // store into blob storage
+  // store user data
   if (!isRequestValid.success) {
     return Response.json({ error: isRequestValid.error.message }, { status: 400 });
   }
@@ -26,20 +38,22 @@ export async function POST(req: NextRequest) {
   console.log({ userAddress, classificationJson, uploadId });
 
   // iterate over the quests and check if any of them match the classification
-  const questAgent = new QuestAgent(db);
+  const MODEL = openai("gpt-4o");
+  const validationAgent = new QuestValidationAgent(MODEL);
+  const questAgent = new QuestAgent(db, validationAgent);
 
-  const questsCompleted = await questAgent.checkIfQuestsAreCompleted(classificationJson);
+  const questsCompleted = await questAgent.checkIfQuestsAreCompleted(classificationJson, userAddress);
 
   console.log(questsCompleted, "quests completed");
 
   //* if yes, call the reward agent
-  if (questsCompleted.length > 0) {
+  if (questsCompleted) {
     if (!AGENT_PRIVATE_KEY || !AGENT_ADR || !CONTRACT_ADDRESS) {
       return Response.json({ error: "Missing environment variables" }, { status: 500 });
     }
 
     //? We need to make sure that the user has enough SE2 to transfer or the agent should take care of it?
-    const rewardAgent = new RewardAgent(TOOLS, openai("gpt-4o"));
+    const rewardAgent = new RewardAgent(TOOLS, MODEL);
 
     const AMOUNT = questAgent.getRewardAmount();
 

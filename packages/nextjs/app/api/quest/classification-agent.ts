@@ -1,7 +1,7 @@
 import { LanguageModelV1, generateObject, generateText } from "ai";
 import { z } from "zod";
 
-const PlantClassificationSchema = z.object({
+export const PlantClassificationSchema = z.object({
   category: z.string(),
   species: z.string().optional(),
   confidence: z.number(),

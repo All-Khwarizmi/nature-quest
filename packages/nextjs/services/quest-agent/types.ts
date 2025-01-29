@@ -1,4 +1,5 @@
 import { ACTIVE, COMPLETED, EXPIRED } from "./constants";
+import { PlantClassification } from "~~/app/api/quest/classification-agent";
 import { TEMPORARY_User } from "~~/src/actions/userActions";
 
 export type Reward = object;
@@ -23,7 +24,7 @@ export type Quest = QuestBase & {
 export interface IQuestAgent {
   generateQuest: () => Promise<QuestBase>;
   isQuestCompleted: (arg0: Quest["classification"], arg1: Quest["classification"]) => boolean;
-  checkIfQuestsAreCompleted: (arg0: Quest["classification"]) => void;
+  checkIfQuestsAreCompleted: (arg0: PlantClassification, userAddress: string) => void;
   markQuestAsCompleted: (userAddress: string, questId: string) => void;
   initializeQuests: () => Promise<Quest[]>;
   updateUserQuests: (userAddress: TEMPORARY_User) => void;

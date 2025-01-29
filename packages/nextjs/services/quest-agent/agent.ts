@@ -1,8 +1,10 @@
+import { QuestValidationAgent } from "../quest-validation-agent/quest-validation-agent";
 import { IQuestAgent, Quest, QuestBase } from "./types";
 import { openai } from "@ai-sdk/openai";
 import { generateText } from "ai";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { PlantClassification } from "~~/app/api/quest/classification-agent";
 import { TEMPORARY_User } from "~~/src/actions/userActions";
 import { DB, db } from "~~/src/db/drizzle";
 import { quests, uploads, users } from "~~/src/db/schema";
@@ -55,11 +57,14 @@ export class QuestAgent implements IQuestAgent {
     "hay",
   ];
 
+  private readonly _validationAgent: QuestValidationAgent;
+
   private _quests: Quest[] | null = null;
   private _completedQuests: Quest[] = [];
 
-  constructor(db: DB) {
+  constructor(db: DB, validationAgent: QuestValidationAgent) {
     this._db = db;
+    this._validationAgent = validationAgent;
   }
 
   getRandomString(arr: string[]): string {
@@ -174,35 +179,29 @@ export class QuestAgent implements IQuestAgent {
    * @param captureClassification - The classification captured by the user
    * @returns An array of completed quests
    */
-  async checkIfQuestsAreCompleted(captureClassification: Quest["classification"]) {
+  async checkIfQuestsAreCompleted(captureClassification: PlantClassification, userAddress: string) {
     try {
       const allQuests = await this.initializeQuests();
+      const [user] = (await this._db.select().from(users).where(eq(users.address, userAddress))) as TEMPORARY_User[];
 
-      const completedQuests: Quest[] = [];
+      const validationResult = await this._validationAgent.validateSubmission(
+        captureClassification,
+        user.quests,
+        allQuests,
+      );
 
-      // check if any of the quests match the classification
-      allQuests.forEach(quest => {
-        const isExpired = quest.expiresAt ? new Date() > quest.expiresAt : false;
-        console.log(quest.expiresAt, "quest expires at", isExpired);
+      console.log({ validationResult });
 
-        console.log(quest.userCount, quest.maxUsers, "quest user count and max users");
-        const isCompleted = (quest.userCount || 0) > (quest.maxUsers || Infinity);
-        console.log(isCompleted, "is completed");
+      if (validationResult.isCompleted) {
+        const quest = allQuests.find(q => q.id === validationResult.questId);
+        if (!quest) return null;
+        return quest;
+      }
 
-        const hasMatchingClassification = this.isQuestCompleted(captureClassification, quest.classification);
-        console.log(hasMatchingClassification, "has matching classification");
-
-        if (hasMatchingClassification && !isExpired && !isCompleted) {
-          console.log("pushing quest to completed quests array");
-          completedQuests.push(quest);
-        }
-      });
-
-      this._completedQuests = completedQuests;
-      return completedQuests;
+      return null;
     } catch (error) {
       console.error(error);
-      return [];
+      return null;
     }
   }
 
