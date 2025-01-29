@@ -4,11 +4,13 @@ import { AGENT_ADR, AGENT_PRIVATE_KEY, CONTRACT_ADDRESS } from "./constants";
 import { RewardAgent } from "./reward-agent";
 import { TOOLS } from "./tools";
 import { openai } from "@ai-sdk/openai";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { QuestAgent } from "~~/services/quest-agent/agent";
 import { QuestValidationAgent } from "~~/services/quest-validation-agent/quest-validation-agent";
 import { TEMPORARY_User, getUserByAddress } from "~~/src/actions/userActions";
 import { db } from "~~/src/db/drizzle";
+import { uploads } from "~~/src/db/schema";
 
 const RequestSchema = z.object({
   userAddress: z.string(),
@@ -71,7 +73,10 @@ export async function POST(req: NextRequest) {
     }
 
     console.log("No quests completed");
+
     //? otherwise, use the user "upload" id to update the resource in db: status = rejected
+    await db.update(uploads).set({ status: "rejected" }).where(eq(uploads.id, uploadId));
+
     return Response.json({ status: "Not Quests Completed" });
   } catch (error) {
     console.error(error);
