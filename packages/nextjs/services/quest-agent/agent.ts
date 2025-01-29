@@ -151,6 +151,14 @@ export class QuestAgent implements IQuestAgent {
       return [];
     }
   }
+  /**
+   * Check if any of the user's quests are completed
+   * @description This function checks if any of the user's quests are completed
+   *  It takes the captured classification and checks if any of the user's quests match the classification
+   *  It also checks if the quest is expired or completed
+   * @param captureClassification - The classification captured by the user
+   * @returns An array of completed quests
+   */
   async checkIfQuestsAreCompleted(captureClassification: Quest["classification"]) {
     try {
       const allQuests = await this.initializeQuests();
@@ -159,7 +167,11 @@ export class QuestAgent implements IQuestAgent {
 
       // check if any of the quests match the classification
       allQuests.forEach(quest => {
-        if (this.isQuestCompleted(captureClassification, quest.classification)) {
+        const isExpired = quest.expiresAt && new Date() > quest.expiresAt;
+
+        const isCompleted = (quest.userCount || 0) >= (quest.maxUsers || Infinity);
+
+        if (this.isQuestCompleted(captureClassification, quest.classification) && !isExpired && isCompleted) {
           completedQuests.push(quest);
         }
       });
@@ -172,7 +184,12 @@ export class QuestAgent implements IQuestAgent {
     }
   }
 
-  // Update the user's quests in memory
+  /**
+   * Update the user's quests in the database
+   * @description Update the user pending and completed fields and assign an already created quest or creates one
+   * @param user - The user object
+   * @returns The updated user object
+   */
   async updateUserQuests(user: TEMPORARY_User) {
     // Mark the quest as completed in the user's quests
     const updatedQuests = {
@@ -197,6 +214,7 @@ export class QuestAgent implements IQuestAgent {
       console.log(newQuest, "new quest");
       updatedQuests.pending.push(newQuest.id);
     } else {
+      //! generate new quest in db an add id to the user pending array
       console.error("No quests available to assign to the user");
     }
     console.log(updatedQuests, "updated quests with new quest");
@@ -213,6 +231,15 @@ export class QuestAgent implements IQuestAgent {
     return updatedUser;
   }
 
+  /**
+   * Global quest update step that finishes the whole flow
+   * @description This function is called when a user completes a quest
+   *  It updates the user's quests, marks the quest as completed in the `uploads` table, and assigns a new quest to the user
+   * @param userAddress - The user's wallet address
+   * @param questId - The ID of the quest to mark as completed
+   * @returns The updated user object
+   *
+   *  */
   async markQuestAsCompleted(userAddress: string, questId: string) {
     try {
       console.log(userAddress, questId, "inside mark quest as completed");
