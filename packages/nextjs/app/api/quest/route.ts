@@ -8,10 +8,9 @@ import { db } from "~~/src/db/drizzle";
 
 // Quest Check Module
 export async function POST(req: NextRequest) {
-  //~ Check step
   const { userAddress, classificationJson } = await req.json();
 
-  // iterate over the quests
+  // iterate over the quests and check if any of them match the classification
   const questAgent = new QuestAgent(db);
 
   const questsCompleted = await questAgent.checkIfQuestsAreCompleted(classificationJson);
@@ -23,11 +22,13 @@ export async function POST(req: NextRequest) {
     }
 
     //? We need to make sure that the user has enough SE2 to transfer or the agent should take care of it?
+    const rewardAgent = new RewardAgent(TOOLS, openai("gpt-4o"));
+
     const AMOUNT = 0.01;
 
     const templatePrompt = RewardAgent.generateRewardPrompt(userAddress, "SE2", AMOUNT);
 
-    const rewardAgent = new RewardAgent(TOOLS, openai("gpt-4o"));
+    // call the reward agent to reward the user
     const tx = await rewardAgent.rewardUser(templatePrompt);
 
     // call the llm to generate a structured response

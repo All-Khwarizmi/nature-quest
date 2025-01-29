@@ -24,4 +24,5 @@ export interface IQuestAgent {
   isQuestCompleted: (arg0: Quest["classification"], arg1: Quest["classification"]) => boolean;
   checkIfQuestsAreCompleted: (arg0: Quest["classification"]) => void;
   markQuestAsCompleted: (arg2: Quest) => void;
+  initializeQuests: () => Promise<Quest[]>;
 }

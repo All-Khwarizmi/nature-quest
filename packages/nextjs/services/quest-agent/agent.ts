@@ -52,6 +52,8 @@ export class QuestAgent implements IQuestAgent {
     "hay",
   ];
 
+  private _quests: Quest[] | null = null;
+
   constructor(db: DB) {
     this._db = db;
   }
@@ -131,9 +133,25 @@ export class QuestAgent implements IQuestAgent {
     }
     return false;
   }
+
+  async initializeQuests() {
+    try {
+      if (this._quests) {
+        return this._quests;
+      }
+      const allQuests = await this._db.select().from(quests);
+      this._quests = allQuests;
+
+      return allQuests;
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
+  }
   async checkIfQuestsAreCompleted(captureClassification: Quest["classification"]) {
     try {
-      const allQuests = await this._db.select().from(quests);
+      const allQuests = await this.initializeQuests();
+
       const completedQuests: Quest[] = [];
 
       // check if any of the quests match the classification
