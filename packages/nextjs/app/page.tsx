@@ -45,25 +45,20 @@ export default function Home() {
     try {
       const user = await handleGetUser(address);
       if (!user) {
-        setError("Failed to get or create user. Please try again.");
         return;
       }
 
       const blob = await handleUploadBlob(imageFile, address);
       if (!blob) {
-        setError("Failed to upload image. Please try again.");
         return;
       }
 
       const result = await handleUploadUserData(user, blob, classificationResult);
-      if (result) {
+      if (!result) {
         setUploadResult(result);
-        setTimeout(() => {
-          router.push(`/details/${result.id}`);
-        }, 3000);
-      } else {
-        setError("Failed to process upload. Please try again.");
+        return;
       }
+      return result;
     } catch (error) {
       console.error(error);
       setError("An unexpected error occurred. Please try again.");
@@ -75,7 +70,30 @@ export default function Home() {
   const handleImageClassification = async (imageFile: File, imageElement: HTMLImageElement) => {
     try {
       const classificationResult = await classifyImage(imageElement, imageFile);
-      await handleUpload(imageFile, classificationResult);
+      const result = await handleUpload(imageFile, classificationResult);
+      if (!result) {
+        return;
+      }
+      // call the check endpoint and pass the userAddress, classificationJson, and uploadId as a JSON body
+      // Add a timeout to abort the request after 3 seconds
+      const abortController = new AbortController();
+      setTimeout(() => abortController.abort(), 2000);
+
+      await fetch("/api/quest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userAddress: result.userId,
+          classificationJson: classificationResult?.className || "",
+          uploadId: result.id,
+        }),
+        signal: abortController.signal,
+      });
+
+      // redirect to details page
+      router.push(`/details/${result.id}`);
     } catch (error) {
       console.error(error);
       setError("Failed to classify image. Please try again.");
@@ -158,7 +176,9 @@ export default function Home() {
       return user;
     } catch (error) {
       console.error(error);
-      throw new Error("Failed to get or create user");
+      setError("Failed to get or create user. Please try again.");
+
+      return null;
     }
   }
 
@@ -181,7 +201,9 @@ export default function Home() {
       return newBlob;
     } catch (err) {
       console.error(err);
-      throw new Error("Failed to upload image");
+      setError("Failed to upload image. Please try again.");
+
+      return null;
     }
   }
 
@@ -206,7 +228,9 @@ export default function Home() {
       return uploadResult;
     } catch (error) {
       console.error(error);
-      throw new Error("Failed to upload user data");
+      setError("Failed to process upload. Please try again.");
+
+      return null;
     }
   }
 }

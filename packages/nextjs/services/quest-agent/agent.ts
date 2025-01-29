@@ -254,9 +254,9 @@ export class QuestAgent implements IQuestAgent {
    * @returns The updated user object
    *
    *  */
-  async markQuestAsCompleted(userAddress: string, questId: string) {
+  async markQuestAsCompleted(userAddress: string, uploadId: string) {
     try {
-      console.log(userAddress, questId, "inside mark quest as completed");
+      console.log(userAddress, uploadId, "inside mark quest as completed");
       // fetch the user from the db
       const [user] = (await db.select().from(users).where(eq(users.address, userAddress))) as TEMPORARY_User[];
       if (!user) {
@@ -268,7 +268,7 @@ export class QuestAgent implements IQuestAgent {
 
       // Mark user upload as completed
       // TODO: type safety of the status
-      await db.update(uploads).set({ status: "approved" }).where(eq(uploads.id, questId));
+      await db.update(uploads).set({ status: "approved" }).where(eq(uploads.id, uploadId));
 
       // Update the quests in the database
       const questsToUpdateAsync = this._completedQuests.map(async quest => {

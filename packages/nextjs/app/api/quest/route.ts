@@ -10,7 +10,7 @@ import { db } from "~~/src/db/drizzle";
 const RequestSchema = z.object({
   userAddress: z.string(),
   classificationJson: z.string(),
-  questId: z.string(),
+  uploadId: z.string(),
 });
 // Quest Check Module
 export async function POST(req: NextRequest) {
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: isRequestValid.error.message }, { status: 400 });
   }
 
-  const { userAddress, classificationJson, questId } = isRequestValid.data;
+  const { userAddress, classificationJson, uploadId } = isRequestValid.data;
 
   // iterate over the quests and check if any of them match the classification
   const questAgent = new QuestAgent(db);
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
 
     // If the quests are completed and the reward h,as been sent to the user mark them as completed in the user's quests
     if (response.result) {
-      await questAgent.markQuestAsCompleted(userAddress, questId);
+      await questAgent.markQuestAsCompleted(userAddress, uploadId);
     }
 
     return Response.json({ response });
@@ -74,6 +74,8 @@ export async function POST(req: NextRequest) {
 
 // On user creation we assign quests
 
+//? Reward flow
+// Expand the user upload table to include the transaction hash and the quests completed and the reward amount given to the user
 // Add a claim button to trigger the reward flow?
 
 // We reward the user somehow even if they don't complete the quest?
