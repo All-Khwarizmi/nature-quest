@@ -1,7 +1,8 @@
 import { QuestAgent } from "./agent";
 import { Quest, QuestBase } from "./types";
+import { db } from "~~/src/db/drizzle";
 
-const questAgent = new QuestAgent();
+const questAgent = new QuestAgent(db);
 
 export const generateQuest = async (): Promise<QuestBase> => {
   try {

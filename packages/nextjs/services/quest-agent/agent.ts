@@ -1,8 +1,10 @@
 import { IQuestAgent, Quest, QuestBase } from "./types";
 import { openai } from "@ai-sdk/openai";
 import { generateText } from "ai";
-import { DB } from "~~/src/db/drizzle";
-import { quests } from "~~/src/db/schema";
+import { eq } from "drizzle-orm";
+import { TEMPORARY_User } from "~~/src/actions/userActions";
+import { DB, db } from "~~/src/db/drizzle";
+import { quests, uploads, users } from "~~/src/db/schema";
 
 export class QuestAgent implements IQuestAgent {
   private readonly _db: DB;
@@ -53,6 +55,7 @@ export class QuestAgent implements IQuestAgent {
   ];
 
   private _quests: Quest[] | null = null;
+  private _completedQuests: Quest[] = [];
 
   constructor(db: DB) {
     this._db = db;
@@ -161,6 +164,7 @@ export class QuestAgent implements IQuestAgent {
         }
       });
 
+      this._completedQuests = completedQuests;
       return completedQuests;
     } catch (error) {
       console.error(error);
@@ -168,7 +172,69 @@ export class QuestAgent implements IQuestAgent {
     }
   }
 
-  markQuestAsCompleted() {
-    // take in a quest, and a user.
+  async markQuestAsCompleted(userAddress: string, questId: string) {
+    try {
+      console.log(userAddress, questId, "inside mark quest as completed");
+      // fetch the user from the db
+      const [user] = (await db.select().from(users).where(eq(users.address, userAddress))) as TEMPORARY_User[];
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      // Mark the quest as completed in the user's quests
+      const updatedQuests = {
+        // Add the completed quests to the user's completed quests array
+        completed: user.quests.completed.concat(this._completedQuests.map(quest => quest.id)),
+
+        // Filter out the completed quests from the pending quests
+        pending: user.quests.pending.filter(
+          questId => !this._completedQuests.some(completedQuest => completedQuest.id === questId),
+        ),
+      };
+
+      console.log(updatedQuests, "updated quests");
+
+      // Assign a new quest to the user if there are any pending quests
+      const potentialQuests = this._quests
+        ?.filter(quest => !updatedQuests.completed.includes(quest.id) && !updatedQuests.pending.includes(quest.id))
+        .sort(() => Math.random() - 0.5);
+
+      if (potentialQuests && potentialQuests.length > 0) {
+        const [newQuest] = potentialQuests;
+        console.log(newQuest, "new quest");
+        updatedQuests.pending.push(newQuest.id);
+      } else {
+        console.error("No quests available to assign to the user");
+      }
+
+      console.log(updatedQuests, "updated quests with new quest");
+
+      // Update the user's quests in the database
+      const updatedUser = (await db
+        .update(users)
+        .set({ quests: updatedQuests })
+        .where(eq(users.address, userAddress))
+        .returning()) as TEMPORARY_User[];
+
+      console.log(updatedUser, "updated user");
+
+      // Mark user upload as completed
+      // TODO: type safety of the status
+      await db.update(uploads).set({ status: "approved" }).where(eq(uploads.id, questId));
+
+      // Update the quests in the database
+      const questsToUpdateAsync = this._completedQuests.map(async quest => {
+        await db
+          .update(quests)
+          .set({ userCount: (quest.userCount || 0) + 1 })
+          .where(eq(quests.id, quest.id));
+      });
+
+      const result = await Promise.allSettled(questsToUpdateAsync);
+
+      console.log(result, "result");
+    } catch (error) {
+      console.error(error);
+    }
   }
 }
