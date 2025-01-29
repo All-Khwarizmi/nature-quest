@@ -55,6 +55,16 @@ const config: HardhatUserConfig = {
         enabled: process.env.MAINNET_FORKING_ENABLED === "true",
       },
     },
+    modeSepolia: {
+      url: "https://sepolia.mode.network",
+      chainId: 919,
+      accounts: [deployerPrivateKey],
+    },
+    modeMainnet: {
+      url: "https://mainnet.mode.network",
+      chainId: 34443,
+      accounts: [deployerPrivateKey],
+    },
     mainnet: {
       url: `https://eth-mainnet.alchemyapi.io/v2/${providerApiKey}`,
       accounts: [deployerPrivateKey],
