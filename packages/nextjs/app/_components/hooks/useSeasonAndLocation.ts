@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface LocationAndSeason {
   location: string;
@@ -10,19 +10,8 @@ interface LocationAndSeason {
 }
 export function useSeasonAndLocation() {
   const [locationData, setLocationData] = useState<LocationAndSeason | null>(null);
-  useEffect(() => {
-    // Only ask for location if we haven't already
-    if (!locationData) {
-      getLocationAndSeason().then(result => {
-        if (result) {
-          setLocationData(result);
-        }
-      });
-    }
-  }, [getLocationAndSeason, locationData]);
 
-  console.log(locationData);
-  async function getLocationAndSeason(): Promise<LocationAndSeason | null> {
+  const getLocationAndSeason = useCallback(async (): Promise<LocationAndSeason | null> => {
     try {
       // Check if we already have permission
       const permissionStatus = await navigator.permissions.query({ name: "geolocation" });
@@ -68,7 +57,19 @@ export function useSeasonAndLocation() {
       console.error("Error getting location:", error);
       return null;
     }
-  }
+  }, []);
+  useEffect(() => {
+    // Only ask for location if we haven't already
+    if (!locationData) {
+      getLocationAndSeason().then(result => {
+        if (result) {
+          setLocationData(result);
+        }
+      });
+    }
+  }, [getLocationAndSeason, locationData]);
+
+  console.log(locationData);
 
   function getSeason(latitude: number, month: number): string {
     const isNorthernHemisphere = latitude > 0;

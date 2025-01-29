@@ -1,8 +1,11 @@
+import { QuestValidationAgent } from "../quest-validation-agent/quest-validation-agent";
 import { QuestAgent } from "./agent";
 import { Quest, QuestBase } from "./types";
+import { openai } from "@ai-sdk/openai";
 import { db } from "~~/src/db/drizzle";
 
-const questAgent = new QuestAgent(db);
+const validationAgent = new QuestValidationAgent(openai("gpt-4o"));
+const questAgent = new QuestAgent(db, validationAgent);
 
 export const generateQuest = async (): Promise<QuestBase> => {
   try {
