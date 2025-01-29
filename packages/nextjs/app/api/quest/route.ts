@@ -68,9 +68,22 @@ export async function POST(req: NextRequest) {
   return Response.json({ status: "Not Quests Completed" });
 }
 
+// Onboarding flow
+// If the user has not completed any quests, we assign them a quest
+// Create a getFirstQuest() function that returns the first quest in the array to show to the new comer
+
+// On user creation we assign quests
+
 // Add a claim button to trigger the reward flow?
 
 // We reward the user somehow even if they don't complete the quest?
 // the classification check might be tricky though if the model does not return what we want. A LLM could be used to help with this but how to pass all the quests or implement a system that makes it more efficient?
 // We might want to extend the Quest table to take the transaction hash and the reward amount given to the user
 // We should check for expiry of the quests
+
+// TODO:
+// Missing features:
+// 1. Onboarding flow
+// 2. Adapt to user preferences (quests creation/ assignment / )
+// 3. Add quality control of the user uploads
+// 3. Add a claim button to trigger the reward flow
