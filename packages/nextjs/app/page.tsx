@@ -89,7 +89,6 @@ export default function Home() {
           classificationJson: classificationResult?.className || "",
           uploadId: result.id,
         }),
-        signal: abortController.signal,
       });
 
       // redirect to details page

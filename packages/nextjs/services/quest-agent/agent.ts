@@ -181,11 +181,18 @@ export class QuestAgent implements IQuestAgent {
 
       // check if any of the quests match the classification
       allQuests.forEach(quest => {
-        const isExpired = quest.expiresAt && new Date() > quest.expiresAt;
+        const isExpired = quest.expiresAt ? new Date() > quest.expiresAt : false;
+        console.log(quest.expiresAt, "quest expires at", isExpired);
 
-        const isCompleted = (quest.userCount || 0) >= (quest.maxUsers || Infinity);
+        console.log(quest.userCount, quest.maxUsers, "quest user count and max users");
+        const isCompleted = (quest.userCount || 0) > (quest.maxUsers || Infinity);
+        console.log(isCompleted, "is completed");
 
-        if (this.isQuestCompleted(captureClassification, quest.classification) && !isExpired && isCompleted) {
+        const hasMatchingClassification = this.isQuestCompleted(captureClassification, quest.classification);
+        console.log(hasMatchingClassification, "has matching classification");
+
+        if (hasMatchingClassification && !isExpired && !isCompleted) {
+          console.log("pushing quest to completed quests array");
           completedQuests.push(quest);
         }
       });

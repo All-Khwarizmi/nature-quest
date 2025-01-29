@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
   }
 
   const { userAddress, classificationJson, uploadId } = isRequestValid.data;
+  console.log({ userAddress, classificationJson, uploadId });
 
   // iterate over the quests and check if any of them match the classification
   const questAgent = new QuestAgent(db);
