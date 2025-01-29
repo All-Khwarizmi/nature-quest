@@ -40,25 +40,24 @@ export async function getUserByAddress(address: string) {
   return (await db.select().from(users).where(eq(users.address, address)))[0];
 }
 
-export async function moveQuestToCompleted(address: string, questToMove: string): Promise<TEMPORARY_User[]> {
+export async function updateCompletedUserQuests(address: string, completedQuests: string[]): Promise<TEMPORARY_User[]> {
+  if (completedQuests.length === 0) return [];
+
+  console.log(completedQuests, 'these are completed quests')
+
   const user = await getUser(address) as TEMPORARY_User;
-  if (!user) {
-      throw new Error('User not found');
-  }
+  if (!user) throw new Error("User not found");
 
-  // Check if the quest is in the pending array
-  if (!user.quests.pending.includes(questToMove)) {
-      throw new Error('Quest not found in pending list');
-  }
-
-  const updatedQuests = {
-      completed: user.quests.completed.concat(questToMove),
-      pending: user.quests.pending.filter(quest => quest !== questToMove)
-  };
+  // Remove completed quests from pending
+  console.log(user.quests.pending, 'current pending array')
+  const updatedPending = user.quests.pending.filter(q => !completedQuests.includes(q));
+  const updatedCompleted = user.quests.completed.concat(completedQuests);
+  console.log(user.quests.pending, 'pending array after update')
+  console.log(updatedCompleted, 'updatedcompleted')
 
   return await db
       .update(users)
-      .set({ quests: updatedQuests })
+      .set({ quests: { pending: updatedPending, completed: updatedCompleted } })
       .where(eq(users.address, address))
       .returning() as TEMPORARY_User[];
 }

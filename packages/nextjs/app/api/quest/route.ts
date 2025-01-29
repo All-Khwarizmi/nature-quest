@@ -9,7 +9,9 @@ import { generateText } from "ai";
 import { Account, createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { hardhat } from "viem/chains";
-
+import { updateCompletedUserQuests } from "~~/src/actions/userActions";
+import { getCompletedQuests } from "~~/services/quest-agent";
+import { PendingQuests } from "~~/components/pending-quests";
 // Quest Check Module
 export async function POST(req: NextRequest) {
   //~ Check step
@@ -20,8 +22,12 @@ export async function POST(req: NextRequest) {
   // check if any of the quests match the classification
   // if yes, call the reward agent
   //? otherwise, use the user "upload" id to update the resource in db: status = rejected
-
-  console.log()
+  
+  // TODO: pass in:
+    // capturedClassification, pendingQuests[], 
+  const completedQuests = getCompletedQuests(capturedClassification, pendingQuests);
+  updateCompletedUserQuests(address, completedQuests);
+  callRewardAgent();
 
   //~ Reward Agent
 

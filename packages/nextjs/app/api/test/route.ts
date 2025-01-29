@@ -1,8 +1,8 @@
 // runs the checkQuest step.  takes in two classifications, if they are the same, then it goes, if not, it doesn't.  
 import { NextResponse } from "next/server";
 import assert from "assert";
-import { isQuestCompleted, checkIfQuestsAreCompleted } from "~~/services/quest-agent";
-import { moveQuestToCompleted } from "~~/src/actions/userActions";
+import { isQuestCompleted, getCompletedQuests } from "~~/services/quest-agent";
+import { updateCompletedUserQuests } from "~~/src/actions/userActions";
 
 export async function GET(request: Request) {
     const quest1 = 'tree'
@@ -18,33 +18,18 @@ export async function GET(request: Request) {
     assert.strictEqual(isQuestCompleted(quest1, quest2), true, 'should be true')
     assert.strictEqual(isQuestCompleted(quest1, quest3), false, 'should be false')
 
-    console.log("moveQuestToCompleted Tests ----------------");
-
-    const userAddress = "0xCc0c18042C4a91726329DF1EEaED8BA1f432F987";
-    const questToMove = "Tree Spotter";
-    
-    // moveQuestToCompleted(userAddress, questToMove).then((result) => {
-    //     console.log("Updated User Quests:", result);
-    // }).catch((error) => {
-    //     console.log("Error:", error.message);
-    // });
-    
-    console.log("moveQuestToCompleted DONE ----------------");
-    console.log("\n")
-    console.log("\n")
-
-    console.log("checkIfQuestsAreCompleted Tests ----------------");
+    console.log("getCompletedQuests Tests ----------------");
     const pendingQuests1 = ["tree", "dog", "bird"];
     const pendingQuests2 = ["cat", "fish", "horse"];
 
     console.log("Pending Quests 1:", pendingQuests1);
     console.log("Capture Classification:", quest1);
-    checkIfQuestsAreCompleted(quest1, pendingQuests1);
+    const completedQuests1 = getCompletedQuests(quest1, pendingQuests1);
 
     console.log("\n");
     console.log("Pending Quests 2:", pendingQuests2);
     console.log("Capture Classification:", quest1);
-    checkIfQuestsAreCompleted(quest1, pendingQuests2);
+    const completedQuests2 = getCompletedQuests(quest1, pendingQuests2);
     
     console.log("checkIfQuestsAreCompleted DONE ----------------");
     console.log("\n");
@@ -53,6 +38,27 @@ export async function GET(request: Request) {
     // Assertions
     assert.strictEqual(isQuestCompleted(quest1, quest2), true, "should be true");
     assert.strictEqual(isQuestCompleted(quest1, quest3), false, "should be false");
+
+    console.log("updateCompletedUserQuests Tests ----------------");
+
+    const userAddress = "0xCc0c18042C4a91726329DF1EEaED8BA1f432F987";
+    const questToMove = "Tree Spotter";
+    
+    updateCompletedUserQuests(userAddress, [questToMove]).then((result) => {
+        console.log("Updated User Quests:", result);
+    }).catch((error) => {
+        console.log("Error:", error.message);
+    });
+
+    // updateCompletedUserQuests(userAddress, completedQuests2).then((result) => {
+    //     console.log("Updated User Quests:", result);
+    // }).catch((error) => {
+    //     console.log("Error:", error.message);
+    // });
+
+    console.log("moveQuestToCompleted DONE ----------------");
+    console.log("\n")
+    console.log("\n")
 
     return NextResponse.json({})
 }
