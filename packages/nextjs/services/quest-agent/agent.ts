@@ -261,15 +261,8 @@ export class QuestAgent implements IQuestAgent {
    * @returns The updated user object
    *
    *  */
-  async markQuestAsCompleted(userAddress: string, uploadId: string) {
+  async markQuestAsCompleted(user: TEMPORARY_User, uploadId: string) {
     try {
-      console.log(userAddress, uploadId, "inside mark quest as completed");
-      // fetch the user from the db
-      const [user] = (await db.select().from(users).where(eq(users.address, userAddress))) as TEMPORARY_User[];
-      if (!user) {
-        throw new Error("User not found");
-      }
-
       // Mark the quest as completed in the user's quests
       await this.updateUserQuests(user);
 

@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
 
       // If the quests are completed and the reward h,as been sent to the user mark them as completed in the user's quests
       if (response.result) {
-        await questAgent.markQuestAsCompleted(userAddress, uploadId);
+        await questAgent.markQuestAsCompleted(user, uploadId);
       }
 
       return Response.json({ response });
