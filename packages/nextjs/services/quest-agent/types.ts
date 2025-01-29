@@ -1,4 +1,5 @@
 import { ACTIVE, COMPLETED, EXPIRED } from "./constants";
+import { TEMPORARY_User } from "~~/src/actions/userActions";
 
 export type Reward = object;
 export type Status = typeof ACTIVE | typeof COMPLETED | typeof EXPIRED;
@@ -25,4 +26,5 @@ export interface IQuestAgent {
   checkIfQuestsAreCompleted: (arg0: Quest["classification"]) => void;
   markQuestAsCompleted: (userAddress: string, questId: string) => void;
   initializeQuests: () => Promise<Quest[]>;
+  updateUserQuests: (userAddress: TEMPORARY_User) => void;
 }
