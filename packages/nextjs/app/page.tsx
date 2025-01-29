@@ -16,7 +16,7 @@ export default function Home() {
   const { address } = useAccount();
 
   const {
-    data: { blob, isUploading, uploadResult, progress, error },
+    data: { blob, uploadResult, progress, error, isProcessing, processingStep },
     functions: { handleImageClassification, handleRetry },
   } = useHomeState();
 
@@ -26,23 +26,7 @@ export default function Home() {
       <div className="relative z-10 flex flex-col min-h-screen">
         <section className="flex-grow flex items-center justify-center px-4">
           <div className="flex flex-col justify-center max-w-md space-y-8">
-            {!blob && !isUploading && !uploadResult && <PhotoCapture onImageCaptured={handleImageClassification} />}
-
-            {isUploading && (
-              <div className="text-center">
-                <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-                <p className="text-forest-green mb-2">Uploading image...</p>
-                <Progress value={progress} className="w-full" />
-              </div>
-            )}
-
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Error</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+            {!blob && !isProcessing && !uploadResult && <PhotoCapture onImageCaptured={handleImageClassification} />}
 
             {blob && !uploadResult && (
               <div className="space-y-4">
@@ -66,6 +50,24 @@ export default function Home() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Always show processing state */}
+            <div
+              className={`text-center transition-opacity duration-300 ${isProcessing ? "opacity-100" : "opacity-0"}`}
+            >
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+              <p className="text-forest-green mb-2">{processingStep || "Processing..."}</p>
+              {progress > 0 && <Progress value={progress} className="w-full" />}
+            </div>
+
+            {/* Always show error state */}
+            <div className={`transition-opacity duration-300 ${error ? "opacity-100" : "opacity-0"}`}>
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{error || "An unexpected error occurred"}</AlertDescription>
+              </Alert>
+            </div>
 
             {address && <PendingQuests userAddress={address} />}
           </div>

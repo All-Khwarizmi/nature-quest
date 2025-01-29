@@ -18,63 +18,48 @@ export default function useHomeState() {
   const [blob, setBlob] = useState<PutBlobResult | null>(null);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [uploadResult, setUploadResult] = useState<any>(null);
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [processingStep, setProcessingStep] = useState<string>("");
 
   const { locationData } = useSeasonAndLocation();
 
   const handleUpload = async (imageFile: File, classificationResult: PlantClassification) => {
-    console.log(imageFile);
-
     if (!isConnected || !address) {
       setError("Please connect your wallet first");
       return;
     }
 
-    setIsUploading(true);
+    setIsProcessing(true);
     setError(null);
     setProgress(0);
 
     try {
+      setProcessingStep("Getting user data...");
       const user = await handleGetUser(address);
-      if (!user) {
-        return;
-      }
+      if (!user) return;
 
+      setProcessingStep("Uploading image...");
       const blob = await handleUploadBlob(imageFile, address);
-      if (!blob) {
-        return;
-      }
+      if (!blob) return;
 
+      setProcessingStep("Processing upload...");
       const result = await handleUploadUserData(user, blob, classificationResult);
-      if (!result) {
-        setUploadResult(result);
-        return;
-      }
+      if (!result) return;
+
       return result;
     } catch (error) {
       console.error(error);
       setError("An unexpected error occurred. Please try again.");
-    } finally {
-      setIsUploading(false);
     }
   };
 
   const handleImageClassification = async (imageFile: File) => {
     try {
-      if (!isConnected || !address) {
-        setError("Please connect your wallet first");
-        return;
-      }
-      // Create FormData for file upload
       const formData = new FormData();
       formData.append("file", imageFile);
 
-      // Check size limit of file 4.5MB
-      if (imageFile.size > 4500000) {
-        setError("File size exceeds the limit of 4.5MB");
-        return;
-      }
-
-      // First, get classification from our AI endpoint
+      setIsProcessing(true);
+      setProcessingStep("Classifying image...");
       const classificationResponse = await fetch("/api/classify", {
         method: "POST",
         body: formData,
@@ -100,6 +85,7 @@ export default function useHomeState() {
         return;
       }
 
+      setProcessingStep("Checking quest completion...");
       // Check quest completion with shorter timeout
       const questResponse = await fetch("/api/quest", {
         method: "POST",
@@ -114,12 +100,11 @@ export default function useHomeState() {
           uploadId: uploadResult.id,
         }),
       });
-
       if (!questResponse.ok) {
         console.warn("Quest check failed, but continuing...");
       }
 
-      // Redirect to details page
+      setProcessingStep("Redirecting to details page...");
       router.push(`/details/${uploadResult.id}`);
     } catch (error) {
       console.error(error);
@@ -128,9 +113,11 @@ export default function useHomeState() {
       } else {
         setError("Failed to process image. Please try again.");
       }
+    } finally {
+      setIsProcessing(false);
+      setProcessingStep("");
     }
   };
-
   async function handleGetUser(address: string) {
     try {
       console.log("Getting user data");
@@ -218,6 +205,8 @@ export default function useHomeState() {
       uploadResult,
       progress,
       error,
+      isProcessing,
+      processingStep,
     },
     functions: {
       handleGetUser,
