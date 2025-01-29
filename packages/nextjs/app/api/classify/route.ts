@@ -1,5 +1,5 @@
 // Usage in API route
-import { ClassificationAgent } from "../quest/reward-agent";
+import { ClassificationAgent } from "../quest/classification-agent";
 import { openai } from "@ai-sdk/openai";
 
 // pages/api/classify.ts
