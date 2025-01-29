@@ -42,7 +42,6 @@ const deployNTRToken: DeployFunction = async function (hre: HardhatRuntimeEnviro
   console.log("\nDeployment Summary:");
   console.log("-------------------");
   console.log("Network: Mode Testnet");
-  console.log("Contract Address:", contractAddress);
   console.log("Initial Admin:", initialAdmin);
   console.log("NatureToken deployed to:", contractAddress);
 };
