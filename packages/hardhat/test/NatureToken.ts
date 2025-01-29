@@ -3,6 +3,7 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { NatureToken } from "../typechain-types";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
+import { bigint } from "hardhat/internal/core/params/argumentTypes";
 
 describe("NatureToken", function () {
   // Contracts
@@ -123,47 +124,65 @@ describe("NatureToken", function () {
     });
   });
 
-  describe("Feature: Quest Rewards", () => {
-    const QUEST_ID = "quest-123";
-    const REWARD_AMOUNT = ethers.parseEther("100");
+  describe("Feature: Token Funding", () => {
+    const FUND_AMOUNT = ethers.parseEther("1000");
 
-    beforeEach(async () => {
-      await natureToken.connect(admin).authorizeAgent(agent.address);
-    });
+    describe("when funding tokens as admin", () => {
+      it("should allow admin to fund tokens", async () => {
+        await expect(natureToken.connect(admin).fundTokens(user.address, FUND_AMOUNT))
+          .to.emit(natureToken, "TokensFunded")
+          .withArgs(user.address, FUND_AMOUNT, admin.address);
 
-    describe("when minting quest rewards", () => {
-      it("should allow agent to mint rewards", async () => {
-        await expect(natureToken.connect(agent).mintQuestReward(REWARD_AMOUNT, user.address, QUEST_ID))
-          .to.emit(natureToken, "QuestRewardMinted")
-          .withArgs(user.address, REWARD_AMOUNT, QUEST_ID, agent.address);
-
-        expect(await natureToken.balanceOf(user.address)).to.equal(REWARD_AMOUNT);
+        expect(await natureToken.balanceOf(user.address)).to.equal(FUND_AMOUNT);
       });
 
-      it("should prevent non-agent from minting rewards", async () => {
-        await expect(
-          natureToken.connect(unauthorized).mintQuestReward(REWARD_AMOUNT, user.address, QUEST_ID),
-        ).to.be.revertedWith("NatureToken: caller is not agent");
+      it("should prevent funding to zero address", async () => {
+        await expect(natureToken.connect(admin).fundTokens(ethers.ZeroAddress, FUND_AMOUNT)).to.be.revertedWith(
+          "NatureToken: invalid recipient",
+        );
       });
 
-      it("should prevent double processing of same quest", async () => {
-        await natureToken.connect(agent).mintQuestReward(REWARD_AMOUNT, user.address, QUEST_ID);
-
-        await expect(
-          natureToken.connect(agent).mintQuestReward(REWARD_AMOUNT, user.address, QUEST_ID),
-        ).to.be.revertedWith("NatureToken: quest already processed");
-      });
-
-      it("should prevent minting to zero address", async () => {
-        await expect(
-          natureToken.connect(agent).mintQuestReward(REWARD_AMOUNT, ethers.ZeroAddress, QUEST_ID),
-        ).to.be.revertedWith("NatureToken: invalid recipient");
-      });
-
-      it("should prevent minting zero amount", async () => {
-        await expect(natureToken.connect(agent).mintQuestReward(0, user.address, QUEST_ID)).to.be.revertedWith(
+      it("should prevent funding zero amount", async () => {
+        await expect(natureToken.connect(admin).fundTokens(user.address, 0)).to.be.revertedWith(
           "NatureToken: invalid amount",
         );
+      });
+    });
+
+    describe("when funding tokens as agent", () => {
+      beforeEach(async () => {
+        await natureToken.connect(admin).authorizeAgent(agent.address);
+      });
+
+      it("should allow agent to fund tokens", async () => {
+        await expect(natureToken.connect(agent).fundTokens(user.address, FUND_AMOUNT))
+          .to.emit(natureToken, "TokensFunded")
+          .withArgs(user.address, FUND_AMOUNT, agent.address);
+
+        expect(await natureToken.balanceOf(user.address)).to.equal(FUND_AMOUNT);
+      });
+    });
+
+    describe("when unauthorized access", () => {
+      it("should prevent unauthorized addresses from funding", async () => {
+        await expect(natureToken.connect(unauthorized).fundTokens(user.address, FUND_AMOUNT)).to.be.revertedWith(
+          "NatureToken: caller is not admin or agent",
+        );
+      });
+    });
+
+    describe("when multiple funding operations", () => {
+      beforeEach(async () => {
+        await natureToken.connect(admin).authorizeAgent(agent.address);
+      });
+
+      it("should correctly accumulate balances", async () => {
+        // Fund from admin
+        await natureToken.connect(admin).fundTokens(user.address, FUND_AMOUNT);
+        // Fund from agent
+        await natureToken.connect(agent).fundTokens(user.address, FUND_AMOUNT);
+
+        expect(await natureToken.balanceOf(user.address)).to.equal(FUND_AMOUNT * BigInt(2));
       });
     });
   });

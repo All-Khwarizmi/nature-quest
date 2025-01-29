@@ -18,9 +18,7 @@ contract NatureToken is ERC20, Ownable, ReentrancyGuard {
     mapping(address => bool) public admins;
     mapping(address => bool) public agents;
 
-    // Quest tracking to prevent double rewards
-    mapping(string => bool) public processedQuestIds;
-
+    event TokensFunded(address indexed to, uint256 amount, address indexed by);
     /**
      * @notice Emitted when a new admin is added
      * @param admin Address of the new admin
@@ -47,15 +45,6 @@ contract NatureToken is ERC20, Ownable, ReentrancyGuard {
      */
     event AgentRemoved(address indexed agent, address indexed removedBy);
 
-    /**
-     * @notice Emitted when quest rewards are minted
-     * @param to Recipient of the rewards
-     * @param amount Amount of tokens minted
-     * @param questId Unique identifier of the completed quest
-     * @param agent Agent that processed the reward
-     */
-    event QuestRewardMinted(address indexed to, uint256 amount, string questId, address indexed agent);
-
     modifier onlyAdmin() {
         require(admins[msg.sender], "NatureToken: caller is not admin");
         _;
@@ -63,6 +52,11 @@ contract NatureToken is ERC20, Ownable, ReentrancyGuard {
 
     modifier onlyAgent() {
         require(agents[msg.sender], "NatureToken: caller is not agent");
+        _;
+    }
+
+    modifier onlyAdminOrAgent() {
+        require(admins[msg.sender] || agents[msg.sender], "NatureToken: caller is not admin or agent");
         _;
     }
 
@@ -123,21 +117,17 @@ contract NatureToken is ERC20, Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice Mint quest rewards
-     * @dev Only callable by authorized agents
+     * @notice Mint tokens to specified address
+     * @dev Only callable by admins or agents
+     * @param to Address to receive the minted tokens
      * @param amount Amount of tokens to mint
-     * @param to Address to receive the rewards
-     * @param questId Unique identifier of the completed quest
      */
-    function mintQuestReward(uint256 amount, address to, string calldata questId) external onlyAgent nonReentrant {
+    function fundTokens(address to, uint256 amount) external onlyAdminOrAgent nonReentrant {
         require(to != address(0), "NatureToken: invalid recipient");
         require(amount > 0, "NatureToken: invalid amount");
-        require(!processedQuestIds[questId], "NatureToken: quest already processed");
 
-        processedQuestIds[questId] = true;
         _mint(to, amount);
-
-        emit QuestRewardMinted(to, amount, questId, msg.sender);
+        emit TokensFunded(to, amount, msg.sender);
     }
 
     /**
