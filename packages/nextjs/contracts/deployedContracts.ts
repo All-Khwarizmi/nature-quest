@@ -6,99 +6,83 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
 const deployedContracts = {
   31337: {
-    SE2Token: {
-      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    NatureToken: {
+      address: "0xcB6B81E02C67C0dea1F8352A4F37B6f0eAF7BEd0",
       abi: [
         {
-          inputs: [],
+          inputs: [
+            {
+              internalType: "address",
+              name: "initialAdmin",
+              type: "address",
+            },
+          ],
           stateMutability: "nonpayable",
           type: "constructor",
         },
         {
+          anonymous: false,
           inputs: [
             {
+              indexed: true,
               internalType: "address",
-              name: "spender",
+              name: "admin",
               type: "address",
             },
-            {
-              internalType: "uint256",
-              name: "allowance",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "needed",
-              type: "uint256",
-            },
           ],
-          name: "ERC20InsufficientAllowance",
-          type: "error",
+          name: "AdminAdded",
+          type: "event",
         },
         {
+          anonymous: false,
           inputs: [
             {
+              indexed: true,
               internalType: "address",
-              name: "sender",
+              name: "admin",
               type: "address",
             },
-            {
-              internalType: "uint256",
-              name: "balance",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "needed",
-              type: "uint256",
-            },
           ],
-          name: "ERC20InsufficientBalance",
-          type: "error",
+          name: "AdminRemoved",
+          type: "event",
         },
         {
+          anonymous: false,
           inputs: [
             {
+              indexed: true,
               internalType: "address",
-              name: "approver",
+              name: "agent",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "addedBy",
               type: "address",
             },
           ],
-          name: "ERC20InvalidApprover",
-          type: "error",
+          name: "AgentAuthorized",
+          type: "event",
         },
         {
+          anonymous: false,
           inputs: [
             {
+              indexed: true,
               internalType: "address",
-              name: "receiver",
+              name: "agent",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "removedBy",
               type: "address",
             },
           ],
-          name: "ERC20InvalidReceiver",
-          type: "error",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "sender",
-              type: "address",
-            },
-          ],
-          name: "ERC20InvalidSender",
-          type: "error",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "spender",
-              type: "address",
-            },
-          ],
-          name: "ERC20InvalidSpender",
-          type: "error",
+          name: "AgentRemoved",
+          type: "event",
         },
         {
           anonymous: false,
@@ -131,6 +115,56 @@ const deployedContracts = {
             {
               indexed: true,
               internalType: "address",
+              name: "previousOwner",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "newOwner",
+              type: "address",
+            },
+          ],
+          name: "OwnershipTransferred",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "string",
+              name: "questId",
+              type: "string",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "agent",
+              type: "address",
+            },
+          ],
+          name: "QuestRewardMinted",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
               name: "from",
               type: "address",
             },
@@ -149,6 +183,57 @@ const deployedContracts = {
           ],
           name: "Transfer",
           type: "event",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "newAdmin",
+              type: "address",
+            },
+          ],
+          name: "addAdmin",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          name: "admins",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          name: "agents",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
         },
         {
           inputs: [
@@ -183,7 +268,7 @@ const deployedContracts = {
             },
             {
               internalType: "uint256",
-              name: "value",
+              name: "amount",
               type: "uint256",
             },
           ],
@@ -195,6 +280,19 @@ const deployedContracts = {
               type: "bool",
             },
           ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "agent",
+              type: "address",
+            },
+          ],
+          name: "authorizeAgent",
+          outputs: [],
           stateMutability: "nonpayable",
           type: "function",
         },
@@ -234,16 +332,107 @@ const deployedContracts = {
           inputs: [
             {
               internalType: "address",
-              name: "to",
+              name: "spender",
               type: "address",
             },
+            {
+              internalType: "uint256",
+              name: "subtractedValue",
+              type: "uint256",
+            },
+          ],
+          name: "decreaseAllowance",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "spender",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "addedValue",
+              type: "uint256",
+            },
+          ],
+          name: "increaseAllowance",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "isAdmin",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "isAgent",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
             {
               internalType: "uint256",
               name: "amount",
               type: "uint256",
             },
+            {
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+            {
+              internalType: "string",
+              name: "questId",
+              type: "string",
+            },
           ],
-          name: "mint",
+          name: "mintQuestReward",
           outputs: [],
           stateMutability: "nonpayable",
           type: "function",
@@ -259,6 +448,71 @@ const deployedContracts = {
             },
           ],
           stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "owner",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "string",
+              name: "",
+              type: "string",
+            },
+          ],
+          name: "processedQuestIds",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "admin",
+              type: "address",
+            },
+          ],
+          name: "removeAdmin",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "agent",
+              type: "address",
+            },
+          ],
+          name: "removeAgent",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "renounceOwnership",
+          outputs: [],
+          stateMutability: "nonpayable",
           type: "function",
         },
         {
@@ -296,7 +550,7 @@ const deployedContracts = {
             },
             {
               internalType: "uint256",
-              name: "value",
+              name: "amount",
               type: "uint256",
             },
           ],
@@ -325,7 +579,7 @@ const deployedContracts = {
             },
             {
               internalType: "uint256",
-              name: "value",
+              name: "amount",
               type: "uint256",
             },
           ],
@@ -340,17 +594,35 @@ const deployedContracts = {
           stateMutability: "nonpayable",
           type: "function",
         },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "newOwner",
+              type: "address",
+            },
+          ],
+          name: "transferOwnership",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
       ],
       inheritedFunctions: {
         allowance: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
         approve: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
         balanceOf: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
         decimals: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+        decreaseAllowance: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+        increaseAllowance: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
         name: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
         symbol: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
         totalSupply: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
         transfer: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
         transferFrom: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+        owner: "@openzeppelin/contracts/access/Ownable.sol",
+        renounceOwnership: "@openzeppelin/contracts/access/Ownable.sol",
+        transferOwnership: "@openzeppelin/contracts/access/Ownable.sol",
       },
     },
   },
