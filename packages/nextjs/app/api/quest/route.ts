@@ -40,14 +40,14 @@ export async function POST(req: NextRequest) {
     //? We need to make sure that the user has enough SE2 to transfer or the agent should take care of it?
     const rewardAgent = new RewardAgent(TOOLS, openai("gpt-4o"));
 
-    const AMOUNT = 0.01;
+    const AMOUNT = questAgent.getRewardAmount();
 
     const templatePrompt = RewardAgent.generateRewardPrompt(userAddress, "SE2", AMOUNT);
 
-    // call the reward agent to reward the user
+    // Call the reward agent to reward the user
     const tx = await rewardAgent.rewardUser(templatePrompt);
 
-    // call the llm to generate a structured response
+    // Call the llm to generate a structured response
     const structuredResponsePrompt = RewardAgent.generateRewardResponsePrompt(tx);
 
     const response = await rewardAgent.generateStructuredResponse(structuredResponsePrompt);
@@ -68,7 +68,9 @@ export async function POST(req: NextRequest) {
   return Response.json({ status: "Not Quests Completed" });
 }
 
-// We might want to reward the user somehow even if they don't complete the quest
+// Add a claim button to trigger the reward flow?
+
+// We reward the user somehow even if they don't complete the quest?
 // the classification check might be tricky though if the model does not return what we want. A LLM could be used to help with this but how to pass all the quests or implement a system that makes it more efficient?
 // We might want to extend the Quest table to take the transaction hash and the reward amount given to the user
 // We should check for expiry of the quests

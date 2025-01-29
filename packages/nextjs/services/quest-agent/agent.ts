@@ -137,6 +137,9 @@ export class QuestAgent implements IQuestAgent {
     return false;
   }
 
+  /**
+   *  **Initialize Quests in Memory**
+   */
   async initializeQuests() {
     try {
       if (this._quests) {
@@ -151,6 +154,17 @@ export class QuestAgent implements IQuestAgent {
       return [];
     }
   }
+
+  //! All the methods below depend on the quests initialization
+
+  /**
+   * Determines the total amount to the reward by adding all the rewards from the completed quests
+   * @returns total reward amount
+   */
+  getRewardAmount(): number {
+    return this._quests?.reduce((total, quest) => total + quest.reward, 0) || 0;
+  }
+
   /**
    * Check if any of the user's quests are completed
    * @description This function checks if any of the user's quests are completed

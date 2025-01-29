@@ -2,6 +2,13 @@ import { CoreTool, LanguageModelV1, generateObject, generateText } from "ai";
 import { z } from "zod";
 
 type Tools = { [key: string]: CoreTool };
+
+/**
+ * Structured Response
+ * @description This interface defines a structured response object
+ * @property result - A boolean indicating whether the transaction was successful
+ * @property transactionHash - The transaction hash of the transaction
+ */
 type StructuredResponse = { result: boolean; transactionHash: string };
 
 const Schema = z.object({
@@ -37,6 +44,7 @@ export class RewardAgent {
    *  @argument prompt - The prompt to use for the agent
    *  @argument maxSteps - The maximum number of steps to take
    *  @argument cb - A callback function to be called after each step
+   *  @returns `string` The result of the reward operation call as a string
    */
   async rewardUser(prompt: string, maxSteps = 10, cb?: (...args: unknown[]) => void) {
     let receipt = "";
@@ -63,6 +71,13 @@ export class RewardAgent {
     }
   }
 
+  /**
+   * Generate a structured response from the reward agent
+   * @description This function generates a structured response from the reward agent
+   *  It takes a prompt and generates a structured response based on the result of the reward operation
+   * @param prompt - The prompt to use for the reward agent
+   * @returns `StructuredResponse` The structured response object
+   */
   async generateStructuredResponse(prompt: string): Promise<StructuredResponse> {
     let response: StructuredResponse = {
       result: false,
