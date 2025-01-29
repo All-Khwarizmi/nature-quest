@@ -65,7 +65,10 @@ export class ClassificationAgent implements ClassificationAgentInterface {
         await tf.setBackend("webgl");
       }
       console.log("Current backend:", tf.getBackend());
-      this.model = await mobilenet.load();
+      this.model = await mobilenet.load({
+        version: 2,
+        alpha: 1,
+      });
     } catch (error) {
       console.error("Failed to load MobileNet model:", error);
     }

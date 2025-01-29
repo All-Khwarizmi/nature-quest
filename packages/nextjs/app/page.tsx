@@ -69,33 +69,67 @@ export default function Home() {
 
   const handleImageClassification = async (imageFile: File, imageElement: HTMLImageElement) => {
     try {
-      const classificationResult = await classifyImage(imageElement, imageFile);
-      const result = await handleUpload(imageFile, classificationResult);
-      if (!result) {
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append("file", imageFile);
+
+      // First, get classification from our AI endpoint
+      const classificationResponse = await fetch("/api/classify", {
+        method: "POST",
+        body: formData,
+        // Longer timeout for AI processing
+        // signal: AbortSignal.timeout(10000), // 10s timeout
+      });
+
+      if (!classificationResponse.ok) {
+        throw new Error("Classification failed");
+      }
+
+      const classificationResult = await classificationResponse.json();
+
+      console.log({ classificationResult });
+
+      // Only proceed if it's a nature image
+      if (!classificationResult.isNature) {
+        setError("Please upload an image of a plant or nature scene.");
         return;
       }
-      // call the check endpoint and pass the userAddress, classificationJson, and uploadId as a JSON body
-      // Add a timeout to abort the request after 3 seconds
-      const abortController = new AbortController();
-      setTimeout(() => abortController.abort(), 2000);
 
-      await fetch("/api/quest", {
+      // Upload the image with classification data
+      const uploadResult = await handleUpload(imageFile, classificationResult);
+      if (!uploadResult) {
+        return;
+      }
+
+      // Check quest completion with shorter timeout
+      const questResponse = await fetch("/api/quest", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userAddress: result.userId,
-          classificationJson: classificationResult?.className || "",
-          uploadId: result.id,
+          userAddress: uploadResult.userId,
+          classificationJson: classificationResult.category,
+          confidence: classificationResult.confidence,
+          species: classificationResult.species,
+          uploadId: uploadResult.id,
         }),
+        // signal: AbortSignal.timeout(2000), // 2s timeout
       });
 
-      // redirect to details page
-      router.push(`/details/${result.id}`);
+      if (!questResponse.ok) {
+        console.warn("Quest check failed, but continuing...");
+      }
+
+      // Redirect to details page
+      router.push(`/details/${uploadResult.id}`);
     } catch (error) {
       console.error(error);
-      setError("Failed to classify image. Please try again.");
+      if (error instanceof DOMException && error.name === "AbortError") {
+        setError("Request timed out. Please try again.");
+      } else {
+        setError("Failed to process image. Please try again.");
+      }
     }
   };
 

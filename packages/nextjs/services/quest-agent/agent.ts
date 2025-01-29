@@ -2,6 +2,7 @@ import { IQuestAgent, Quest, QuestBase } from "./types";
 import { openai } from "@ai-sdk/openai";
 import { generateText } from "ai";
 import { eq } from "drizzle-orm";
+import { z } from "zod";
 import { TEMPORARY_User } from "~~/src/actions/userActions";
 import { DB, db } from "~~/src/db/drizzle";
 import { quests, uploads, users } from "~~/src/db/schema";
