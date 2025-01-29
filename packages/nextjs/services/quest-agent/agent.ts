@@ -1,11 +1,11 @@
-import { isQuestCompleted } from ".";
-import { ClassificationResult } from "../classification-agent/types";
 import { IQuestAgent, Quest, QuestBase } from "./types";
 import { openai } from "@ai-sdk/openai";
 import { generateText } from "ai";
-import { boolean } from "drizzle-orm/mysql-core";
+import { DB } from "~~/src/db/drizzle";
+import { quests } from "~~/src/db/schema";
 
 export class QuestAgent implements IQuestAgent {
+  private readonly _db: DB;
   private readonly BOTANICAL_KEYWORDS = [
     "rapeseed",
     "daisy",
@@ -51,6 +51,10 @@ export class QuestAgent implements IQuestAgent {
     "pomegranate",
     "hay",
   ];
+
+  constructor(db: DB) {
+    this._db = db;
+  }
 
   getRandomString(arr: string[]): string {
     if (arr.length === 0) {
@@ -126,6 +130,24 @@ export class QuestAgent implements IQuestAgent {
       return true;
     }
     return false;
+  }
+  async checkIfQuestsAreCompleted(captureClassification: Quest["classification"]) {
+    try {
+      const allQuests = await this._db.select().from(quests);
+      const completedQuests: Quest[] = [];
+
+      // check if any of the quests match the classification
+      allQuests.forEach(quest => {
+        if (this.isQuestCompleted(captureClassification, quest.classification)) {
+          completedQuests.push(quest);
+        }
+      });
+
+      return completedQuests;
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
   }
 
   markQuestAsCompleted() {
