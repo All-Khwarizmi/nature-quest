@@ -25,7 +25,7 @@ export default function Home() {
       <BackgroundPattern />
       <div className="relative z-10 flex flex-col min-h-screen">
         <section className="flex-grow flex items-center justify-center px-4">
-          <div className="flex flex-col justify-center max-w-md space-y-8">
+          <div className="flex flex-col justify-center max-w-md space-y-4 py-4 pb-8">
             {!blob && !isProcessing && !uploadResult && <PhotoCapture onImageCaptured={handleImageClassification} />}
 
             {blob && !uploadResult && (
