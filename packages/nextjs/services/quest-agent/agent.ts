@@ -195,6 +195,9 @@ export class QuestAgent implements IQuestAgent {
       if (validationResult.isCompleted) {
         const quest = allQuests.find(q => q.id === validationResult.questId);
         if (!quest) return null;
+
+        this._completedQuests.push(quest);
+
         return quest;
       }
 
@@ -225,20 +228,22 @@ export class QuestAgent implements IQuestAgent {
 
     console.log(updatedQuests, "updated quests");
 
-    // Assign a new quest to the user if there are any pending quests
-    const potentialQuests = this._quests
-      ?.filter(quest => !updatedQuests.completed.includes(quest.id) && !updatedQuests.pending.includes(quest.id))
-      .sort(() => Math.random() - 0.5);
+    if (updatedQuests.pending.length < 3) {
+      // Assign a new quest to the user if there are any pending quests
+      const potentialQuests = this._quests
+        ?.filter(quest => !updatedQuests.completed.includes(quest.id) && !updatedQuests.pending.includes(quest.id))
+        .sort(() => Math.random() - 0.5);
 
-    if (potentialQuests && potentialQuests.length > 0) {
-      const [newQuest] = potentialQuests;
-      console.log(newQuest, "new quest");
-      updatedQuests.pending.push(newQuest.id);
-    } else {
-      //! generate new quest in db an add id to the user pending array
-      console.error("No quests available to assign to the user");
+      if (potentialQuests && potentialQuests.length > 0) {
+        const [newQuest] = potentialQuests;
+        console.log(newQuest, "new quest");
+        updatedQuests.pending.push(newQuest.id);
+      } else {
+        //! generate new quest in db an add id to the user pending array
+        console.error("No quests available to assign to the user");
+      }
+      console.log(updatedQuests, "updated quests with new quest");
     }
-    console.log(updatedQuests, "updated quests with new quest");
 
     // Update the user's quests in the database
     const [updatedUser] = (await db
