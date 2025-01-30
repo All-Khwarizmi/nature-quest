@@ -1,106 +1,122 @@
-# Nature Quest
+# Nature Quest 🌿
 
+A decentralized citizen science platform powered by AI and blockchain rewards. Users capture nature discoveries, AI validates them, and contributors earn NTR tokens.
 
-AI-powered citizen science platform with blockchain rewards.
+<div align="center" style="margin-bottom: 20px;">
 
-### Reward / Quests logic
+![App Demo GIF](https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExa2RpbzluN2d6NnR6bXBmejZ4b2x3bGZ6bG9yNGpveTg0ZzFldjdqZiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/MbAhUYZBfy6Xjm2Wbg/giphy.gif)
 
-- Quests contain a reward amount and a classification (e.g. a specific species of animal)
-- When needed the Reward Agent (or next step in the agentik flow) could select the most appropriate next quests to assign to the user
-- User Table contains
-  - completed quests
-  - pending quests
-- Whenever a user uploads an image, if it matches a quest,
-  -  the user is added to the quest table (or the quest is updated)
-  -  update the user table
+</div>
 
-# 🏄‍♂️
+## Why Nature Quest?
 
-⚙️ Built using NextJS, RainbowKit, Hardhat, Wagmi, Viem, and Typescript.
+Traditional biodiversity research faces three key challenges:
 
-- ✅ **Contract Hot Reload**: Your frontend auto-adapts to your smart contract as you edit it.
-- 🪝 **[Custom hooks](https://docs.scaffoldeth.io/hooks/)**: Collection of React hooks wrapper around [wagmi](https://wagmi.sh/) to simplify interactions with smart contracts with typescript autocompletion.
-- 🧱 [**Components**](https://docs.scaffoldeth.io/components/): Collection of common web3 components to quickly build your frontend.
-- 🔥 **Burner Wallet & Local Faucet**: Quickly test your application with a burner wallet and local faucet.
-- 🔐 **Integration with Wallet Providers**: Connect to different wallet providers and interact with the Ethereum network.
+1. Limited data collection capacity
+2. High costs of field research
+3. Lack of community engagement
 
-![Debug Contracts tab](https://github.com/scaffold-eth/scaffold-eth-2/assets/55535804/b237af0c-5027-4849-a5c1-2e31495cccb1)
+Nature Quest solves these by combining:
 
-## Requirements
+- AI-powered species identification
+- Gamified citizen science
+- Token incentives for quality contributions
 
-Before you begin, you need to install the following tools:
+## Tech Stack
 
-- [Node (>= v18.18)](https://nodejs.org/en/download/)
-- Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
-- [Git](https://git-scm.com/downloads)
+- **Frontend**: Next.js, RainbowKit
+- **Blockchain**: Mode Network, Hardhat
+- **AI**: OpenAI GPT-4V for species identification
+- **Base Framework**: Built with [ScaffoldETH 2](https://scaffoldeth.io)
 
-## Quickstart
+## Quick Start
 
-To get started with Scaffold-ETH 2, follow the steps below:
+1. **Environment Setup**
 
-1. Install dependencies if it was skipped in CLI:
-
+```bash
+# .env.local
+NEXT_PUBLIC_AGENT_ADDRESS=your_agent_address
+AGENT_PRIVATE_KEY=your_agent_private_key
+NEXT_PUBLIC_CONTRACT_ADDRESS=0xC259F77B7d010F9D9DE46de1018788ef69620625
 ```
-cd my-dapp-example
+
+2. **Install & Run**
+
+```bash
 yarn install
-```
-
-2. Run a local network in the first terminal:
-
-```
-yarn chain
-```
-
-This command starts a local Ethereum network using Hardhat. The network runs on your local machine and can be used for testing and development. You can customize the network configuration in `packages/hardhat/hardhat.config.ts`.
-
-3. On a second terminal, deploy the test contract:
-
-```
-yarn deploy
-```
-
-This command deploys a test smart contract to the local network. The contract is located in `packages/hardhat/contracts` and can be modified to suit your needs. The `yarn deploy` command uses the deploy script located in `packages/hardhat/deploy` to deploy the contract to the network. You can also customize the deploy script.
-
-4. On a third terminal, start your NextJS app:
-
-```
 yarn start
 ```
 
-Visit your app on: `http://localhost:3000`. You can interact with your smart contract using the `Debug Contracts` page. You can tweak the app config in `packages/nextjs/scaffold.config.ts`.
+## System Architecture
 
-Run smart contract test with `yarn hardhat:test`
+### Smart Contract (Mode Testnet)
 
-- Edit your smart contracts in `packages/hardhat/contracts`
-- Edit your frontend homepage at `packages/nextjs/app/page.tsx`. For guidance on [routing](https://nextjs.org/docs/app/building-your-application/routing/defining-routes) and configuring [pages/layouts](https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts) checkout the Next.js documentation.
-- Edit your deployment scripts in `packages/hardhat/deploy`
+- **Address**: `0xC259F77B7d010F9D9De46de1018788ef69620625`
+- **Token**: NTR (Nature Token)
 
-## 🚀 Setup ERC-20 Token Extension
+### Role System
 
-This extension introduces an ERC-20 token contract and demonstrates how to use interact with it, including getting a holder balance and transferring tokens.
+1. **Owner**: Contract deployer, manages admins
+2. **Admins**: Authorize/remove agents
+3. **Agents**: AI-powered entities that process rewards
 
-The ERC-20 Token Standard introduces a standard for Fungible Tokens ([EIP-20](https://eips.ethereum.org/EIPS/eip-20)), in other words, each Token is exactly the same (in type and value) as any other Token.
+### Reward Flow
 
-The ERC-20 token contract is implemented using the [ERC-20 token implementation](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/ERC20.sol) from OpenZeppelin.
+1. User completes nature quest
+2. AI agent validates submission
+3. Valid discoveries earn NTR tokens
+4. Quest completion recorded on-chain
 
-### Setup
+## Local Setup Guide
 
-Deploy your contract running `yarn deploy`
+1. **Environment Configuration**
 
-### Interact with the token
+```env
+# .env.local
+NEXT_PUBLIC_AGENT_ADDRESS=your_agent_address
+AGENT_PRIVATE_KEY=your_agent_private_key
+NEXT_PUBLIC_CONTRACT_ADDRESS=0xC259F77B7d010F9D9DE46de1018788ef69620625
+```
 
-Start the front-end with `yarn start` and go to the _/erc20_ page to interact with your deployed ERC-20 token.
+2. **Chain Configuration**
+   Ensure your constants file has: (to have the agent talking to the local chain and not the testnet use the commented values and change the contract address to the local contract address)
 
-You can check the code at `packages/nextjs/app/erc20/page.tsx`.
+```typescript
+//packages/nextjs/app/api/quest/constants.ts
+export const CHAIN_ID = 919; // 31337
+export const CHAIN = modeTestnet; // hardhat
 
-## Documentation
+//packages/nextjs/scaffold.config.ts
 
-Visit our [docs](https://docs.scaffoldeth.io) to learn how to start building with Scaffold-ETH 2.
+const scaffoldConfig = {
+  // The networks on which your DApp is live
+  targetNetworks: [chains.modeTestnet], // chains.hardhat
+};
+```
 
-To know more about its features, check out our [website](https://scaffoldeth.io).
+3. **Agent Authorization Flow**
+   Before the agent can operate:
+1. Contract owner must add an admin
+1. Admin must authorize the agent
+1. Admin/agent must fund the agent with tokens
 
-## Contributing to Scaffold-ETH 2
+1. **Interacting with Contract**
 
-We welcome contributions to Scaffold-ETH 2!
+- Use the debug page to interact directly with contract functions
+- Test different roles (owner/admin/agent)
+- Monitor events and transactions
 
-Please see [CONTRIBUTING.MD](https://github.com/scaffold-eth/scaffold-eth-2/blob/main/CONTRIBUTING.md) for more information and guidelines for contributing to Scaffold-ETH 2.
+1. **Contract Interaction**
+
+- Use debug page to interact with contract
+- Authorize agent and fund with tokens
+- Monitor transactions on Mode Explorer
+
+## Contributing
+
+We welcome contributions! See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+
+## Resources
+
+- [Mode Explorer](https://sepolia.explorer.mode.network/)
+- [Contract](https://sepolia.explorer.mode.network/address/0xC259F77B7d010F9D9De46de1018788ef69620625)
