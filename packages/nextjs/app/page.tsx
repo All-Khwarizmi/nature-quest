@@ -1,10 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import type { PutBlobResult, UploadProgressEvent } from "@vercel/blob";
-import { upload } from "@vercel/blob/client";
+import useHomeState from "./_components/hooks/use-home-state";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { useAccount } from "wagmi";
 import { BackgroundPattern } from "~~/components/background-pattern";
@@ -14,104 +11,22 @@ import { Alert, AlertDescription, AlertTitle } from "~~/components/ui/alert";
 import { Button } from "~~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~~/components/ui/card";
 import { Progress } from "~~/components/ui/progress";
-import { classifyImage } from "~~/services/classification-agent";
-import type { ClassificationResult } from "~~/services/classification-agent/types";
-import addUpload from "~~/src/actions/uploadActions";
-import addUser, { getUser } from "~~/src/actions/userActions";
-import type { User } from "~~/src/db/schema";
 
 export default function Home() {
-  const router = useRouter();
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
 
-  const [progress, setProgress] = useState<number>(0);
-  const [error, setError] = useState<string | null>(null);
-  const [blob, setBlob] = useState<PutBlobResult | null>(null);
-  const [isUploading, setIsUploading] = useState<boolean>(false);
-  const [uploadResult, setUploadResult] = useState<any>(null);
-
-  const handleUpload = async (imageFile: File, classificationResult: ClassificationResult) => {
-    console.log(imageFile);
-
-    if (!isConnected || !address) {
-      setError("Please connect your wallet first");
-      return;
-    }
-
-    setIsUploading(true);
-    setError(null);
-    setProgress(0);
-
-    try {
-      const user = await handleGetUser(address);
-      if (!user) {
-        setError("Failed to get or create user. Please try again.");
-        return;
-      }
-
-      const blob = await handleUploadBlob(imageFile, address);
-      if (!blob) {
-        setError("Failed to upload image. Please try again.");
-        return;
-      }
-
-      const result = await handleUploadUserData(user, blob, classificationResult);
-      if (result) {
-        setUploadResult(result);
-        setTimeout(() => {
-          router.push(`/details/${result.id}`);
-        }, 3000);
-      } else {
-        setError("Failed to process upload. Please try again.");
-      }
-    } catch (error) {
-      console.error(error);
-      setError("An unexpected error occurred. Please try again.");
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const handleImageClassification = async (imageFile: File, imageElement: HTMLImageElement) => {
-    try {
-      const classificationResult = await classifyImage(imageElement, imageFile);
-      await handleUpload(imageFile, classificationResult);
-    } catch (error) {
-      console.error(error);
-      setError("Failed to classify image. Please try again.");
-    }
-  };
-
-  const handleRetry = () => {
-    setBlob(null);
-    setError(null);
-    setProgress(0);
-    setUploadResult(null);
-  };
+  const {
+    data: { blob, uploadResult, progress, error, isProcessing, processingStep },
+    functions: { handleImageClassification, handleRetry },
+  } = useHomeState();
 
   return (
     <div className="min-h-screen bg-background relative">
       <BackgroundPattern />
       <div className="relative z-10 flex flex-col min-h-screen">
         <section className="flex-grow flex items-center justify-center px-4">
-          <div className="flex flex-col justify-center max-w-md space-y-8">
-            {!blob && !isUploading && !uploadResult && <PhotoCapture onImageCaptured={handleImageClassification} />}
-
-            {isUploading && (
-              <div className="text-center">
-                <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-                <p className="text-forest-green mb-2">Uploading image...</p>
-                <Progress value={progress} className="w-full" />
-              </div>
-            )}
-
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Error</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+          <div className="flex flex-col justify-center max-w-md space-y-4 py-4 pb-8">
+            {!blob && !isProcessing && !uploadResult && <PhotoCapture onImageCaptured={handleImageClassification} />}
 
             {blob && !uploadResult && (
               <div className="space-y-4">
@@ -136,77 +51,28 @@ export default function Home() {
               </Card>
             )}
 
+            {/* Always show processing state */}
+            <div
+              className={`text-center transition-opacity duration-300 ${isProcessing ? "opacity-100" : "opacity-0"}`}
+            >
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+              <p className="text-forest-green mb-2">{processingStep || "Processing..."}</p>
+              {progress > 0 && <Progress value={progress} className="w-full" />}
+            </div>
+
+            {/* Always show error state */}
+            <div className={`transition-opacity duration-300 ${error ? "opacity-100" : "opacity-0"}`}>
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{error || "An unexpected error occurred"}</AlertDescription>
+              </Alert>
+            </div>
+
             {address && <PendingQuests userAddress={address} />}
           </div>
         </section>
       </div>
     </div>
   );
-
-  async function handleGetUser(address: string) {
-    try {
-      console.log("Getting user data");
-      let user = await getUser(address);
-      console.log(user);
-      if (!user) {
-        console.log("User not found, creating new user");
-        user = await addUser(address);
-        if (!user) {
-          throw new Error("Failed to create user");
-        }
-      }
-      return user;
-    } catch (error) {
-      console.error(error);
-      throw new Error("Failed to get or create user");
-    }
-  }
-
-  async function handleUploadBlob(imageFile: File, address: string) {
-    try {
-      const newBlob = await upload(imageFile.name, imageFile, {
-        access: "public",
-        handleUploadUrl: "/api/image/upload",
-        clientPayload: address,
-        contentType: imageFile.type,
-        onUploadProgress: (progress: UploadProgressEvent) => {
-          console.log("Progress:", progress);
-          setProgress(Math.round((progress.loaded / progress.total) * 100));
-        },
-      });
-
-      console.log("new blob", newBlob);
-
-      setBlob(newBlob);
-      return newBlob;
-    } catch (err) {
-      console.error(err);
-      throw new Error("Failed to upload image");
-    }
-  }
-
-  async function handleUploadUserData(user: User, newBlob: PutBlobResult, classificationResult: ClassificationResult) {
-    try {
-      console.log("Uploading user data");
-      const uploadResult = await addUpload({
-        userId: user.id,
-        classificationJson: classificationResult?.className || "",
-        imageUrl: newBlob.url,
-        metadata: "Spring Birds",
-        status: "pending",
-        location: [0, 0],
-        season: "spring",
-        createdAt: new Date(),
-        photoTakenAt: new Date(),
-        updatedAt: new Date(),
-        questId: user.id,
-      });
-
-      console.log(uploadResult);
-      return uploadResult;
-    } catch (error) {
-      console.error(error);
-      throw new Error("Failed to upload user data");
-    }
-  }
 }

@@ -1,6 +1,8 @@
 "use client";
 
 import { Address, formatEther } from "viem";
+import { useAccount } from "wagmi";
+import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 import { useDisplayUsdMode } from "~~/hooks/scaffold-eth/useDisplayUsdMode";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 import { useWatchBalance } from "~~/hooks/scaffold-eth/useWatchBalance";
@@ -19,7 +21,13 @@ export const Balance = ({ address, className = "", usdMode }: BalanceProps) => {
   const { targetNetwork } = useTargetNetwork();
   const nativeCurrencyPrice = useGlobalState(state => state.nativeCurrency.price);
   const isNativeCurrencyPriceFetching = useGlobalState(state => state.nativeCurrency.isFetching);
+  const { address: connectedAddress } = useAccount();
 
+  const { data: tokenBalance } = useScaffoldReadContract({
+    contractName: "NatureToken",
+    functionName: "balanceOf",
+    args: [connectedAddress],
+  });
   const {
     data: balance,
     isError,
@@ -49,7 +57,7 @@ export const Balance = ({ address, className = "", usdMode }: BalanceProps) => {
     );
   }
 
-  const formattedBalance = balance ? Number(formatEther(balance.value)) : 0;
+  const formattedBalance = tokenBalance ? Number(formatEther(tokenBalance)) : 0;
 
   return (
     <button
@@ -66,7 +74,7 @@ export const Balance = ({ address, className = "", usdMode }: BalanceProps) => {
         ) : (
           <>
             <span>{formattedBalance.toFixed(4)}</span>
-            <span className="text-[0.8em] font-bold ml-1">{targetNetwork.nativeCurrency.symbol}</span>
+            <span className="text-[0.8em] font-bold ml-1">NRT</span>
           </>
         )}
       </div>

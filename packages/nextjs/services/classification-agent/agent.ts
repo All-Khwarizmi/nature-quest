@@ -1,7 +1,7 @@
-import * as tf from '@tensorflow/tfjs';
-import * as mobilenet from "@tensorflow-models/mobilenet";
-import "@tensorflow/tfjs-backend-webgl";
 import { ClassificationAgentInterface, ClassificationResult } from "./types";
+import * as mobilenet from "@tensorflow-models/mobilenet";
+import * as tf from "@tensorflow/tfjs";
+import "@tensorflow/tfjs-backend-webgl";
 
 export class ClassificationAgent implements ClassificationAgentInterface {
   private model: mobilenet.MobileNet | null = null;
@@ -49,23 +49,26 @@ export class ClassificationAgent implements ClassificationAgentInterface {
     "jack",
     "custard apple",
     "pomegranate",
-    "hay"
-  ]  
+    "hay",
+  ];
 
   constructor() {
     if (typeof window !== "undefined") {
-        this.initModel();
-      }
+      this.initModel();
+    }
   }
 
   private async initModel() {
     try {
-        await tf.ready();
-        if (tf.getBackend() !== 'webgl') {
-            await tf.setBackend('webgl');
-        }
-        console.log('Current backend:', tf.getBackend());
-      this.model = await mobilenet.load();
+      await tf.ready();
+      if (tf.getBackend() !== "webgl") {
+        await tf.setBackend("webgl");
+      }
+      console.log("Current backend:", tf.getBackend());
+      this.model = await mobilenet.load({
+        version: 2,
+        alpha: 1,
+      });
     } catch (error) {
       console.error("Failed to load MobileNet model:", error);
     }
@@ -91,19 +94,19 @@ export class ClassificationAgent implements ClassificationAgentInterface {
 
       // Get predictions
       const predictions = await this.model.classify(image, 5); // Get top 5 predictions
-      console.log(predictions, 'predictions inside classify image');
+      console.log(predictions, "predictions inside classify image");
       // Find first botanical prediction
-    //   for (const prediction of predictions) {
-    //     if (this.isBotanical(prediction.className)) {
-    //       return {
-    //         className: prediction.className.toLowerCase(),
-    //         image,
-    //         file,
-    //       };
-    //     }
-    //   }
+      //   for (const prediction of predictions) {
+      //     if (this.isBotanical(prediction.className)) {
+      //       return {
+      //         className: prediction.className.toLowerCase(),
+      //         image,
+      //         file,
+      //       };
+      //     }
+      //   }
 
-    if (predictions.length > 0) {
+      if (predictions.length > 0) {
         return {
           className: predictions[0].className.toLowerCase(),
           image,

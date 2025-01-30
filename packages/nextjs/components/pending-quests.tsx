@@ -22,10 +22,9 @@ export function PendingQuests({ userAddress }: PendingQuestsProps) {
         const userData = await getUser(userAddress);
         const userQuestData = userData?.quests as { pending: string[]; completed: string[] };
         setUser(userData);
-        console.log(userQuestData);
         if (userData) {
           const allQuests = await getQuests();
-          const userPendingQuests = allQuests.filter(quest => userQuestData.pending.includes(quest.title));
+          const userPendingQuests = allQuests.filter(quest => userQuestData.pending.includes(quest.id));
           setPendingQuests(userPendingQuests);
         }
       } catch (error) {

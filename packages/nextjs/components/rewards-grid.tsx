@@ -18,7 +18,7 @@ export function RewardsGrid({ quests, completedQuests }: RewardsGridProps) {
           <QuestCard
             key={quest.id}
             quest={quest}
-            isCompleted={completedQuests?.includes(quest.title)}
+            isCompleted={completedQuests?.includes(quest.id)}
             onClick={() => setSelectedQuest(quest)}
           />
         ))}
@@ -27,7 +27,7 @@ export function RewardsGrid({ quests, completedQuests }: RewardsGridProps) {
         quest={selectedQuest}
         isOpen={!!selectedQuest}
         onClose={() => setSelectedQuest(null)}
-        isCompleted={selectedQuest ? completedQuests?.includes(selectedQuest.title) : false}
+        isCompleted={selectedQuest ? completedQuests?.includes(selectedQuest.id) : false}
       />
     </>
   );

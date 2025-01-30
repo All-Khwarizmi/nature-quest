@@ -1,6 +1,6 @@
 import * as dotenv from "dotenv";
 dotenv.config();
-import { HardhatUserConfig } from "hardhat/config";
+import { HardhatUserConfig, vars } from "hardhat/config";
 import "@nomicfoundation/hardhat-ethers";
 import "@nomicfoundation/hardhat-chai-matchers";
 import "@typechain/hardhat";
@@ -9,8 +9,12 @@ import "solidity-coverage";
 import "@nomicfoundation/hardhat-verify";
 import "hardhat-deploy";
 import "hardhat-deploy-ethers";
+import "@nomicfoundation/hardhat-ignition";
+
 import { task } from "hardhat/config";
 import generateTsAbis from "./scripts/generateTsAbis";
+
+const deployer = vars.get("DEPLOYER_ADDRESS");
 
 // If not set, it uses ours Alchemy's default API key.
 // You can get your own at https://dashboard.alchemyapi.io
@@ -54,6 +58,21 @@ const config: HardhatUserConfig = {
         url: `https://eth-mainnet.alchemyapi.io/v2/${providerApiKey}`,
         enabled: process.env.MAINNET_FORKING_ENABLED === "true",
       },
+    },
+    localhost: {
+      url: "http://localhost:8545",
+      chainId: 31337,
+      accounts: [deployer],
+    },
+    modeSepolia: {
+      url: "https://sepolia.mode.network",
+      chainId: 919,
+      accounts: [deployer],
+    },
+    modeMainnet: {
+      url: "https://mainnet.mode.network",
+      chainId: 34443,
+      accounts: [deployer],
     },
     mainnet: {
       url: `https://eth-mainnet.alchemyapi.io/v2/${providerApiKey}`,
