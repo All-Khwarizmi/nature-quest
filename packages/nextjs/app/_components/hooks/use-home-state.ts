@@ -29,6 +29,7 @@ export default function useHomeState() {
       return;
     }
 
+    setIsUploading(true);
     setIsProcessing(true);
     setError(null);
     setProgress(0);
