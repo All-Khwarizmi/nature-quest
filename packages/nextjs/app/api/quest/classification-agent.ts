@@ -43,6 +43,7 @@ Categories to classify:
 - MUSHROOM: Fungi and mushrooms
 - FERN: All types of ferns
 - OTHER_PLANT: Other plant types
+- ANIMALS: Any animals
 - NOT_NATURE: Non-nature images`;
   }
 
