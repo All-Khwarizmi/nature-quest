@@ -3474,6 +3474,7 @@ __metadata:
     prettier: ~3.3.3
     qrcode.react: ~4.0.1
     react: ~18.3.1
+    react-confetti: ^6.2.2
     react-copy-to-clipboard: ~5.1.0
     react-dom: ~18.3.1
     react-hot-toast: ~2.4.0
@@ -13449,6 +13450,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-confetti@npm:^6.2.2":
+  version: 6.2.2
+  resolution: "react-confetti@npm:6.2.2"
+  dependencies:
+    tween-functions: ^1.2.0
+  peerDependencies:
+    react: ^16.3.0 || ^17.0.1 || ^18.0.0 || ^19.0.0
+  checksum: df470c7fae00c1db6b50562469916f900f1beaf3fcd3c735146e5c55cc3e79bb142851d10b8b9b493e347a016c94156b50564ca9ec4f9864ea02d2eae5fb9559
+  languageName: node
+  linkType: hard
+
 "react-copy-to-clipboard@npm:~5.1.0":
   version: 5.1.0
   resolution: "react-copy-to-clipboard@npm:5.1.0"
@@ -15463,6 +15475,13 @@ __metadata:
   bin:
     tsx: dist/cli.mjs
   checksum: 7f9f1b338a73297725a9217cedaaad862f7c81d5264093c74b98a71491ad5413b11248d604c0e650f4f7da6f365249f1426fdb58a1325ab9e15448156b1edff6
+  languageName: node
+  linkType: hard
+
+"tween-functions@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "tween-functions@npm:1.2.0"
+  checksum: 880708d680eff5c347ddcb9f922ad121703a91c78ce308ed309073e73a794b633eb0b80589a839365803f150515ad34c9646809ae8a0e90f09e62686eefb1ab6
   languageName: node
   linkType: hard
 
