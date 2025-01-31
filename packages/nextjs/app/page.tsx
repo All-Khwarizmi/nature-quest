@@ -2,11 +2,14 @@
 
 import Image from "next/image";
 import useHomeState from "./_components/hooks/use-home-state";
+import { useTokenBalance } from "./_components/hooks/use-token-balance";
 import { AlertCircle, Loader2 } from "lucide-react";
+import Confetti from "react-confetti";
 import { useAccount } from "wagmi";
 import { BackgroundPattern } from "~~/components/background-pattern";
 import { PendingQuests } from "~~/components/pending-quests";
 import { PhotoCapture } from "~~/components/photo-capture";
+import { TokenEarnedModal } from "~~/components/token-earned-modal";
 import { Alert, AlertDescription, AlertTitle } from "~~/components/ui/alert";
 import { Button } from "~~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~~/components/ui/card";
@@ -16,58 +19,79 @@ export default function Home() {
   const { address } = useAccount();
 
   const {
-    data: { blob, uploadResult, progress, error, isProcessing, processingStep },
-    functions: { handleImageClassification, handleRetry },
+    data: { blob, uploadResult, progress, error, isProcessing, processingStep, classificationResult },
+    functions: { handleImageClassification, handleRetry, handleRedirectToDetails },
   } = useHomeState();
+
+  const { showConfetti, showModal, earnedTokens, closeModal } = useTokenBalance();
 
   return (
     <div className="min-h-screen bg-background relative">
       <BackgroundPattern />
+      {showConfetti && <Confetti />}
+      <TokenEarnedModal isOpen={showModal} onClose={closeModal} earnedTokens={earnedTokens} />
       <div className="relative z-10 flex flex-col min-h-screen">
         <section className="flex-grow flex items-center justify-center px-4">
-          <div className="flex flex-col justify-center max-w-md space-y-4 py-4 pb-8">
+          <div className="flex flex-col justify-center max-w-md space-y-8 py-4 pb-8">
             {!blob && !isProcessing && !uploadResult && <PhotoCapture onImageCaptured={handleImageClassification} />}
 
-            {blob && !uploadResult && (
-              <div className="space-y-4">
-                <div className="relative aspect-square rounded-lg overflow-hidden">
-                  <Image src={blob.url || "/placeholder.svg"} alt="Captured image" fill className="object-cover" />
-                </div>
-                <Button onClick={handleRetry} className="w-full text-white">
-                  Capture Another Image
-                </Button>
-              </div>
-            )}
-
-            {uploadResult && (
-              <Card>
+            {(blob || isProcessing || uploadResult) && (
+              <Card className="w-full">
                 <CardHeader>
-                  <CardTitle>Upload Successful!</CardTitle>
+                  <CardTitle>{processingStep || "Image Capture"}</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p>Your image has been uploaded and classified.</p>
-                  <p>Redirecting to details page...</p>
+                <CardContent className="space-y-4">
+                  {blob && (
+                    <div className="relative aspect-square rounded-lg overflow-hidden">
+                      <Image src={blob.url || "/placeholder.svg"} alt="Captured image" fill className="object-cover" />
+                    </div>
+                  )}
+
+                  {isProcessing && (
+                    <div className="text-center">
+                      <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+                      <p className="text-forest-green mb-2">{processingStep || "Processing..."}</p>
+                      {progress > 0 && <Progress value={progress} className="w-full" />}
+                    </div>
+                  )}
+
+                  {classificationResult && (
+                    <div className="space-y-2">
+                      <h3 className="font-semibold">Classification Result:</h3>
+                      <p>Species: {classificationResult.species}</p>
+                      <p>Confidence: {classificationResult.confidence.toFixed(2)}%</p>
+                      <p>Category: {classificationResult.category}</p>
+                      <p>{classificationResult.description}</p>
+                    </div>
+                  )}
+
+                  {uploadResult && (
+                    <>
+                      <p>Your image has been uploaded and classified successfully!</p>
+                    </>
+                  )}
+
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertTitle>Error</AlertTitle>
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+
+                  {!isProcessing && uploadResult && (
+                    <Button onClick={handleRedirectToDetails} className="w-full text-white">
+                      View Details
+                    </Button>
+                  )}
+                  {!isProcessing && (
+                    <Button onClick={handleRetry} className="w-full text-white">
+                      Capture Another Image
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             )}
-
-            {/* Always show processing state */}
-            <div
-              className={`text-center transition-opacity duration-300 ${isProcessing ? "opacity-100" : "opacity-0"}`}
-            >
-              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-              <p className="text-forest-green mb-2">{processingStep || "Processing..."}</p>
-              {progress > 0 && <Progress value={progress} className="w-full" />}
-            </div>
-
-            {/* Always show error state */}
-            <div className={`transition-opacity duration-300 ${error ? "opacity-100" : "opacity-0"}`}>
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Error</AlertTitle>
-                <AlertDescription>{error || "An unexpected error occurred"}</AlertDescription>
-              </Alert>
-            </div>
 
             {address && <PendingQuests userAddress={address} />}
           </div>

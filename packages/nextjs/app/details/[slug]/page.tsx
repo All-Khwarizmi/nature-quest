@@ -4,33 +4,44 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { AlertCircle, Loader2 } from "lucide-react";
-import { PlantClassification } from "~~/app/api/quest/classification-agent";
+import { useTokenBalance } from "~~/app/_components/hooks/use-token-balance";
+import { Confetti } from "~~/components/confetti";
+import { TokenEarnedModal } from "~~/components/token-earned-modal";
 import { Alert, AlertDescription, AlertTitle } from "~~/components/ui/alert";
 import { Badge } from "~~/components/ui/badge";
 import { Button } from "~~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~~/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~~/components/ui/tabs";
 
-interface UploadData {
+type PlantClassification = {
+  category: string;
+  confidence: number;
+  description: string;
+  isNature: boolean;
+  species?: string | undefined;
+};
+
+type Upload = {
   id: string;
+  createdAt: Date | null;
+  updatedAt: Date | null;
   userId: string;
-  questId?: string;
+  questId: string | null;
   imageUrl: string;
   classificationJson: PlantClassification;
-  status: "pending" | "approved" | "rejected";
-  location?: [number, number];
-  season?: string;
-  photoTakenAt?: string;
-  metadata?: any;
-  createdAt: string;
-  updatedAt: string;
-}
+  status: string;
+  location: [number, number] | null;
+  season: string | null;
+  photoTakenAt: Date | null;
+  metadata: unknown;
+};
 
 export default function SpeciesDetailPage({ params }: { params: { slug: string } }) {
-  const [uploadData, setUploadData] = useState<UploadData | null>(null);
+  const [uploadData, setUploadData] = useState<Upload | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  const { showConfetti, showModal, earnedTokens, closeModal } = useTokenBalance();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,7 +50,7 @@ export default function SpeciesDetailPage({ params }: { params: { slug: string }
         if (!response.ok) {
           throw new Error("Failed to fetch upload data");
         }
-        const data: UploadData = await response.json();
+        const data: Upload = await response.json();
         setUploadData(data);
         setIsLoading(false);
       } catch (err) {
@@ -57,11 +68,12 @@ export default function SpeciesDetailPage({ params }: { params: { slug: string }
     if (uploadData && uploadData.status === "pending") {
       intervalId = setInterval(async () => {
         try {
+          console.log("checking if the upload has finished");
           const response = await fetch(`/api/uploads/${params.slug}`);
           if (!response.ok) {
             throw new Error("Failed to fetch updated status");
           }
-          const updatedData: UploadData = await response.json();
+          const updatedData: Upload = await response.json();
 
           if (updatedData.status !== uploadData.status) {
             setUploadData(updatedData);
@@ -99,6 +111,8 @@ export default function SpeciesDetailPage({ params }: { params: { slug: string }
 
   return (
     <main className="min-h-screen bg-white">
+      {showConfetti && <Confetti />}
+      <TokenEarnedModal isOpen={showModal} onClose={closeModal} earnedTokens={earnedTokens} />
       <div className="container px-4 py-8 pt-24">
         <div className="max-w-4xl mx-auto">
           <div className="relative aspect-[16/9] rounded-lg overflow-hidden mb-8">
@@ -111,23 +125,29 @@ export default function SpeciesDetailPage({ params }: { params: { slug: string }
             />
           </div>
 
-          <div className="grid gap-8 md:grid-cols-3">
-            <div className="md:col-span-2">
-              <h1 className="text-3xl font-bold text-[#2C5530] mb-2">{uploadData.classificationJson.species}</h1>
-              {/* <p className="text-[#90EE90] text-lg mb-4">Confidence: {uploadData.classificationJson}%</p> */}
+          <div className="grid gap-8 md:grid-cols-2">
+            <div>
+              <h1 className="text-3xl font-bold text-[#2C5530] mb-2">
+                {uploadData.classificationJson.species || "Unknown Species"}
+              </h1>
+              <p className="text-[#90EE90] text-lg mb-4">
+                Confidence: {uploadData.classificationJson.confidence.toFixed(2)}%
+              </p>
 
-              <Tabs defaultValue="details" className="w-full">
-                <TabsList>
-                  <TabsTrigger value="details">Details</TabsTrigger>
-                  <TabsTrigger value="metadata">Metadata</TabsTrigger>
-                </TabsList>
-                <TabsContent value="details" className="text-gray-700 leading-relaxed">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Classification Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
                   <p>
-                    <strong>Status:</strong> {uploadData.status}
+                    <strong>Category:</strong> {uploadData.classificationJson.category}
                   </p>
-                  {uploadData.questId && (
+                  <p>
+                    <strong>Description:</strong> {uploadData.classificationJson.description}
+                  </p>
+                  {uploadData.season && (
                     <p>
-                      <strong>Quest ID:</strong> {uploadData.questId}
+                      <strong>Season:</strong> {uploadData.season}
                     </p>
                   )}
                   {uploadData.location && (
@@ -136,74 +156,65 @@ export default function SpeciesDetailPage({ params }: { params: { slug: string }
                       {uploadData.location[1].toFixed(6)}
                     </p>
                   )}
-                  {uploadData.season && (
-                    <p>
-                      <strong>Season:</strong> {uploadData.season}
-                    </p>
-                  )}
                   {uploadData.photoTakenAt && (
                     <p>
                       <strong>Photo Taken:</strong> {new Date(uploadData.photoTakenAt).toLocaleString()}
                     </p>
                   )}
-                </TabsContent>
-                <TabsContent value="metadata" className="text-gray-700 leading-relaxed overflow-scroll">
-                  <pre>{JSON.stringify(uploadData.metadata, null, 2)}</pre>
-                </TabsContent>
-              </Tabs>
+                </CardContent>
+              </Card>
             </div>
 
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Upload Information</CardTitle>
+                  <CardTitle>Upload Status</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p>
-                    <strong>Upload ID:</strong> {uploadData.id}
-                  </p>
-                  <p>
-                    <strong>User ID:</strong> {uploadData.userId}
-                  </p>
-                  <p>
-                    <strong>Created At:</strong> {new Date(uploadData.createdAt).toLocaleString()}
-                  </p>
-                  <p>
-                    <strong>Updated At:</strong> {new Date(uploadData.updatedAt).toLocaleString()}
-                  </p>
+                  <Badge
+                    variant={
+                      uploadData.status === "approved"
+                        ? "approved"
+                        : uploadData.status === "rejected"
+                          ? "destructive"
+                          : "default"
+                    }
+                    className="text-sm"
+                  >
+                    {uploadData.status.charAt(0).toUpperCase() + uploadData.status.slice(1)}
+                  </Badge>
+                  {uploadData.status === "pending" && (
+                    <Alert className="mt-4">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertTitle>Pending Reward</AlertTitle>
+                      <AlertDescription>
+                        Your upload is being processed. Please check back later for your reward status.
+                      </AlertDescription>
+                    </Alert>
+                  )}
                 </CardContent>
               </Card>
 
-              <div className="text-white">
-                <h2 className="font-semibold text-lg mb-2 text-[#2C5530]">Status</h2>
-                <Badge
-                  variant={
-                    uploadData.status === "approved"
-                      ? "approved"
-                      : uploadData.status === "rejected"
-                        ? "destructive"
-                        : "default"
-                  }
-                  className="text-sm"
-                >
-                  {uploadData.status.charAt(0).toUpperCase() + uploadData.status.slice(1)}
-                </Badge>
-              </div>
-
-              {uploadData.status === "pending" && (
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Pending Reward</AlertTitle>
-                  <AlertDescription>
-                    Your upload is being processed. Please check back later for your reward status.
-                  </AlertDescription>
-                </Alert>
+              {uploadData.questId && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Quest Information</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p>
+                      <strong>Quest ID:</strong> {uploadData.questId}
+                    </p>
+                    {/* Add more quest-related information here if available */}
+                  </CardContent>
+                </Card>
               )}
             </div>
           </div>
 
-          <div className="mt-8 text-white">
-            <Button onClick={() => router.push("/")}>Back to Home</Button>
+          <div className="mt-8">
+            <Button onClick={() => router.push("/")} variant="outline">
+              Back to Home
+            </Button>
           </div>
         </div>
       </div>

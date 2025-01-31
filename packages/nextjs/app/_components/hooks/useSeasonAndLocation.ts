@@ -69,8 +69,6 @@ export function useSeasonAndLocation() {
     }
   }, [getLocationAndSeason, locationData]);
 
-  console.log(locationData);
-
   function getSeason(latitude: number, month: number): string {
     const isNorthernHemisphere = latitude > 0;
 
