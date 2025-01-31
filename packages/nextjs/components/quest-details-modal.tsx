@@ -2,6 +2,8 @@ import { Badge } from "~~/components/ui/badge";
 import { Button } from "~~/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "~~/components/ui/dialog";
 import type { Quest } from "~~/src/db/schema";
+import { addQuestToPending } from "~~/src/actions/userActions";
+import { useAccount } from "wagmi";
 
 interface QuestDetailsModalProps {
   quest: Quest | null;
@@ -12,6 +14,7 @@ interface QuestDetailsModalProps {
 
 export function QuestDetailsModal({ quest, isOpen, onClose, isCompleted }: QuestDetailsModalProps) {
   if (!quest) return null;
+  const { address } = useAccount();
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -37,8 +40,16 @@ export function QuestDetailsModal({ quest, isOpen, onClose, isCompleted }: Quest
           {!isCompleted && (
             <Button
               className="text-primary-content"
-              onClick={() => {
-                /* TODO: Implement quest start logic */
+              onClick={async () => {
+                if (address) {
+                  try {
+                    await addQuestToPending(address, quest);
+                    console.log("Quest added successfully!");
+                    onClose();
+                  } catch (error) {
+                    console.error("Failed to add quest:", error);
+                  }
+                }            
               }}
             >
               Start Quest
