@@ -13,8 +13,8 @@ interface QuestDetailsModalProps {
 }
 
 export function QuestDetailsModal({ quest, isOpen, onClose, isCompleted }: QuestDetailsModalProps) {
-  if (!quest) return null;
   const { address } = useAccount();
+  if (!quest) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

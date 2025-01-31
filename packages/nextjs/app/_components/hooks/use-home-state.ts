@@ -81,10 +81,10 @@ export default function useHomeState() {
       const classificationResult = (await classificationResponse.json()) as PlantClassification;
       setClassificationResult(classificationResult);
 
-      if (!classificationResult.isNature) {
-        setError("Please upload an image of a plant or nature scene.");
-        return;
-      }
+      // if (!classificationResult.isNature) {
+      //   setError("Please upload an image of a plant or nature scene.");
+      //   return;
+      // }
 
       const uploadResult = await handleUpload(imageFile, classificationResult);
       if (!uploadResult) return;

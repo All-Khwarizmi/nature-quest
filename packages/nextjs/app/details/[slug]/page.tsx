@@ -181,27 +181,16 @@ export default function SpeciesDetailPage({ params }: { params: { slug: string }
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Upload Status</CardTitle>
+                  <CardTitle>Rewards</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Badge
-                    variant={
-                      uploadData.status === "approved"
-                        ? "approved"
-                        : uploadData.status === "rejected"
-                          ? "destructive"
-                          : "default"
-                    }
-                    className="text-sm"
-                  >
-                    {uploadData.status.charAt(0).toUpperCase() + uploadData.status.slice(1)}
-                  </Badge>
                   {uploadData.status === "pending" && (
                     <Alert className="mt-4">
                       <AlertCircle className="h-4 w-4" />
-                      <AlertTitle>Pending Reward</AlertTitle>
+                      <AlertTitle>{remainingSeconds !== 0 ? 'Checking with MODE Network.' : 'You Rock!'}</AlertTitle>
                       <AlertDescription>
-                        Your upload is being processed. Please wait {remainingSeconds} more seconds.
+                        {remainingSeconds !== 0 ? `Please wait ${remainingSeconds} more seconds.` : 
+                        'Congratulations!'}
                       </AlertDescription>
                     </Alert>
                   )}
