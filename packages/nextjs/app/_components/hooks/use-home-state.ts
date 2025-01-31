@@ -1,13 +1,14 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import useSeasonAndLocation from "./useSeasonAndLocation";
 import type { PutBlobResult, UploadProgressEvent } from "@vercel/blob";
 import { upload } from "@vercel/blob/client";
 import { useAccount } from "wagmi";
 import { PlantClassification } from "~~/app/api/quest/classification-agent";
+import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 import addUpload from "~~/src/actions/uploadActions";
 import addUser, { getUser } from "~~/src/actions/userActions";
-import type { User } from "~~/src/db/schema";
+import type { Upload, User } from "~~/src/db/schema";
 
 export default function useHomeState() {
   const router = useRouter();
@@ -17,11 +18,31 @@ export default function useHomeState() {
   const [error, setError] = useState<string | null>(null);
   const [blob, setBlob] = useState<PutBlobResult | null>(null);
   const [isUploading, setIsUploading] = useState<boolean>(false);
-  const [uploadResult, setUploadResult] = useState<any>(null);
+  const [uploadResult, setUploadResult] = useState<Upload | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [processingStep, setProcessingStep] = useState<string>("");
+  const [classificationResult, setClassificationResult] = useState<PlantClassification | null>(null);
+  const [showConfetti, setShowConfetti] = useState<boolean>(false);
 
   const { locationData } = useSeasonAndLocation();
+
+  const { data: tokenBalance } = useScaffoldReadContract({
+    contractName: "NatureToken",
+    functionName: "balanceOf",
+    args: [address],
+  });
+
+  const userBalanceRef = useRef<bigint | undefined>(undefined);
+
+  useEffect(() => {
+    if (tokenBalance && userBalanceRef.current !== undefined && tokenBalance > userBalanceRef.current) {
+      console.log("Token balance increased:", tokenBalance.toString(), "Previous:", userBalanceRef.current.toString());
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 5000);
+    }
+
+    userBalanceRef.current = tokenBalance;
+  }, [tokenBalance]);
 
   const handleUpload = async (imageFile: File, classificationResult: PlantClassification) => {
     if (!isConnected || !address) {
@@ -71,6 +92,7 @@ export default function useHomeState() {
       }
 
       const classificationResult = (await classificationResponse.json()) as PlantClassification;
+      setClassificationResult(classificationResult);
 
       console.log({ classificationResult });
 
@@ -82,9 +104,8 @@ export default function useHomeState() {
 
       // Upload the image with classification data
       const uploadResult = await handleUpload(imageFile, classificationResult);
-      if (!uploadResult) {
-        return;
-      }
+
+      if (!uploadResult) return;
 
       setProcessingStep("Checking quest completion...");
       // Check quest completion with shorter timeout
@@ -105,8 +126,7 @@ export default function useHomeState() {
         console.warn("Quest check failed, but continuing...");
       }
 
-      setProcessingStep("Redirecting to details page...");
-      router.push(`/details/${uploadResult.id}`);
+      setProcessingStep("Checking completed");
     } catch (error) {
       console.error(error);
       if (error instanceof DOMException && error.name === "AbortError") {
@@ -116,7 +136,6 @@ export default function useHomeState() {
       }
     } finally {
       setIsProcessing(false);
-      setProcessingStep("");
     }
   };
   async function handleGetUser(address: string) {
@@ -181,11 +200,12 @@ export default function useHomeState() {
         updatedAt: new Date(),
         questId: null,
       });
+      setUploadResult(uploadResult);
 
       console.log(uploadResult);
       return uploadResult;
     } catch (error) {
-      console.error(error);
+      console.error("Error uploading user data:", error);
       setError("Failed to process upload. Please try again.");
 
       return null;
@@ -199,6 +219,11 @@ export default function useHomeState() {
     setUploadResult(null);
   };
 
+  const handleRedirectToDetails = () => {
+    if (!uploadResult) return;
+    router.push(`/details/${uploadResult?.id}`);
+  };
+
   return {
     data: {
       blob,
@@ -208,12 +233,16 @@ export default function useHomeState() {
       error,
       isProcessing,
       processingStep,
+      classificationResult,
+      showConfetti,
+      tokenBalance,
     },
     functions: {
       handleGetUser,
       handleUploadBlob,
       handleUploadUserData,
       handleImageClassification,
+      handleRedirectToDetails,
       handleRetry,
     },
   };
