@@ -2,7 +2,7 @@
 
 import { db } from "../db/drizzle";
 import { users } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import type { Quest } from "../db/schema";
 
 // TODO: Decide where to place type, nullable stuff
@@ -67,4 +67,13 @@ export async function moveQuestToCompleted(address: string, questToMove: string)
     .set({ quests: updatedQuests })
     .where(eq(users.address, address))
     .returning()) as TEMPORARY_User[];
+}
+
+export async function addQuestToPending(address: string, questToAdd: Quest): Promise<void> {
+  await db
+    .update(users)
+    .set({       quests: sql`${users.quests} || jsonb_build_object('pending', (quests->'pending')::jsonb || ${JSON.stringify([questToAdd.id])}::jsonb)`,
+  })
+    .where(eq(users.address, address))
+    .returning()
 }
