@@ -68,6 +68,7 @@ export default function SpeciesDetailPage({ params }: { params: { slug: string }
     if (uploadData && uploadData.status === "pending") {
       intervalId = setInterval(async () => {
         try {
+          console.log("checking if the upload has finished");
           const response = await fetch(`/api/uploads/${params.slug}`);
           if (!response.ok) {
             throw new Error("Failed to fetch updated status");

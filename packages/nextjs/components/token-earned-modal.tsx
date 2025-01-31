@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 interface TokenEarnedModalProps {
   isOpen: boolean;
   onClose: () => void;
-  earnedTokens: bigint;
+  earnedTokens: number;
 }
 
 export function TokenEarnedModal({ isOpen, onClose, earnedTokens }: TokenEarnedModalProps) {
@@ -17,7 +17,7 @@ export function TokenEarnedModal({ isOpen, onClose, earnedTokens }: TokenEarnedM
             You&apos;ve earned some Nature Tokens!
           </DialogDescription>
         </DialogHeader>
-        <div className="py-4">
+        <div className="py-4 truncate">
           <p className="text-3xl font-bold text-center text-[#FFD700]">+{earnedTokens.toString()} Tokens</p>
         </div>
         <div className="flex justify-center mt-4">

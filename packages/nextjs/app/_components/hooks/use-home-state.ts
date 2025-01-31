@@ -81,22 +81,20 @@ export default function useHomeState() {
       const classificationResult = (await classificationResponse.json()) as PlantClassification;
       setClassificationResult(classificationResult);
 
-      console.log({ classificationResult });
-
-      // Only proceed if it's a nature image
       if (!classificationResult.isNature) {
         setError("Please upload an image of a plant or nature scene.");
         return;
       }
 
-      // Upload the image with classification data
       const uploadResult = await handleUpload(imageFile, classificationResult);
-
       if (!uploadResult) return;
 
-      setProcessingStep("Checking quest completion...");
-      // Check quest completion with shorter timeout
-      const questResponse = await fetch("/api/quest", {
+      setUploadResult(uploadResult);
+
+      setProcessingStep("Processing submission...");
+
+      // Fire quest processing but don't wait
+      fetch("/api/quest", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -104,16 +102,17 @@ export default function useHomeState() {
         body: JSON.stringify({
           userAddress: address,
           classificationJson: classificationResult,
-          confidence: classificationResult.confidence,
-          species: classificationResult.species,
           uploadId: uploadResult.id,
         }),
+      }).catch(error => {
+        console.error("Quest processing request failed:", error);
       });
-      if (!questResponse.ok) {
-        console.warn("Quest check failed, but continuing...");
-      }
 
-      setProcessingStep("Checking completed");
+      setProcessingStep("Redirecting to details page...");
+
+      router.push(`/details/${uploadResult?.id}`);
+
+      // Redirect immediately
     } catch (error) {
       console.error(error);
       if (error instanceof DOMException && error.name === "AbortError") {
