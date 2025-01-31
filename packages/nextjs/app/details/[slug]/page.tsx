@@ -40,9 +40,22 @@ export default function SpeciesDetailPage({ params }: { params: { slug: string }
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const [remainingSeconds, setRemainingSeconds] = useState(45);
 
   const { showConfetti, showModal, earnedTokens, closeModal } = useTokenBalance();
 
+  useEffect(() => {
+    if (remainingSeconds <= 0) return;
+
+    // if (uploadData?.status !== 'pending') return;
+
+    const interval = setInterval(() => {
+      setRemainingSeconds((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [remainingSeconds]);
+    
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -66,6 +79,7 @@ export default function SpeciesDetailPage({ params }: { params: { slug: string }
     let intervalId: NodeJS.Timeout;
 
     if (uploadData && uploadData.status === "pending") {
+      console.log(uploadData, 'this is updload data')
       intervalId = setInterval(async () => {
         try {
           console.log("checking if the upload has finished");
@@ -75,9 +89,8 @@ export default function SpeciesDetailPage({ params }: { params: { slug: string }
           }
           const updatedData: Upload = await response.json();
 
-          if (updatedData.status !== uploadData.status) {
-            setUploadData(updatedData);
-          }
+          setUploadData(updatedData);
+
         } catch (error) {
           console.error("Failed to check status:", error);
         }
@@ -188,7 +201,7 @@ export default function SpeciesDetailPage({ params }: { params: { slug: string }
                       <AlertCircle className="h-4 w-4" />
                       <AlertTitle>Pending Reward</AlertTitle>
                       <AlertDescription>
-                        Your upload is being processed. Please check back later for your reward status.
+                        Your upload is being processed. Please wait {remainingSeconds} more seconds.
                       </AlertDescription>
                     </Alert>
                   )}
