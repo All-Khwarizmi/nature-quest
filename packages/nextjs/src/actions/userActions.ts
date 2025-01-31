@@ -3,6 +3,7 @@
 import { db } from "../db/drizzle";
 import { users } from "../db/schema";
 import { eq } from "drizzle-orm";
+import type { Quest } from "../db/schema";
 
 // TODO: Decide where to place type, nullable stuff
 export type TEMPORARY_User = {
@@ -18,12 +19,17 @@ export type TEMPORARY_User = {
   lastQuestCompletedAt?: Date | null; // Optional timestamp for the last quest completed
 };
 
+const DEFAULT_QUEST = {
+  pending: [],
+  completed: ["8e03aa6d-baf1-413e-8243-3487c64ee95d"],
+};
+
 export default async function addUser(address: string) {
   // TODO: update quests to be an array of quest ids
   return (
     await db
       .insert(users)
-      .values({ address: address, quests: { pending: [], completed: [] } })
+      .values({ address: address, quests: DEFAULT_QUEST})
       .returning()
   )[0];
 }

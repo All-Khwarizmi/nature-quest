@@ -15,18 +15,25 @@ export function PendingQuests({ userAddress }: PendingQuestsProps) {
   const [user, setUser] = useState<User | null>(null);
   const [pendingQuests, setPendingQuests] = useState<Quest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [defaultQuest, setDefaultQuest] = useState<Quest | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const userData = await getUser(userAddress);
-        const userQuestData = userData?.quests as { pending: string[]; completed: string[] };
         setUser(userData);
-        if (userData) {
-          const allQuests = await getQuests();
-          const userPendingQuests = allQuests.filter(quest => userQuestData.pending.includes(quest.id));
-          setPendingQuests(userPendingQuests);
+
+        const allQuests = await getQuests();
+
+        if (!userData) {
+          const firstQuest = allQuests.find(quest => quest.id === "8e03aa6d-baf1-413e-8243-3487c64ee95d") || null;
+          setDefaultQuest(firstQuest);
+          return;
         }
+
+        const userQuestData = userData?.quests as { pending: string[]; completed: string[] };
+        const userPendingQuests = allQuests.filter(quest => userQuestData.pending.includes(quest.id));
+        setPendingQuests(userPendingQuests);
       } catch (error) {
         console.error("Error fetching user data or quests:", error);
       } finally {
@@ -45,7 +52,19 @@ export function PendingQuests({ userAddress }: PendingQuestsProps) {
     );
   }
 
-  if (!user || pendingQuests.length === 0) {
+  if (!user && defaultQuest) {    
+    return <p className="text-center text-gray-500"><QuestCard
+    isCompleted={false}
+    key={'8e03aa6d-baf1-413e-8243-3487c64ee95d'}
+    quest={defaultQuest}
+    onClick={() => {
+      /* TODO: Implement quest start logic */
+    }}
+  /></p>;
+  }
+
+  if (pendingQuests.length === 0) {
+    console.log(user, 'user')
     return <p className="text-center text-gray-500">No pending quests available.</p>;
   }
 
