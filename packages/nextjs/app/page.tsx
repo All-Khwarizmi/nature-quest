@@ -2,12 +2,14 @@
 
 import Image from "next/image";
 import useHomeState from "./_components/hooks/use-home-state";
+import { useTokenBalance } from "./_components/hooks/use-token-balance";
 import { AlertCircle, Loader2 } from "lucide-react";
 import Confetti from "react-confetti";
 import { useAccount } from "wagmi";
 import { BackgroundPattern } from "~~/components/background-pattern";
 import { PendingQuests } from "~~/components/pending-quests";
 import { PhotoCapture } from "~~/components/photo-capture";
+import { TokenEarnedModal } from "~~/components/token-earned-modal";
 import { Alert, AlertDescription, AlertTitle } from "~~/components/ui/alert";
 import { Button } from "~~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~~/components/ui/card";
@@ -17,14 +19,17 @@ export default function Home() {
   const { address } = useAccount();
 
   const {
-    data: { blob, uploadResult, progress, error, isProcessing, processingStep, classificationResult, showConfetti },
+    data: { blob, uploadResult, progress, error, isProcessing, processingStep, classificationResult },
     functions: { handleImageClassification, handleRetry, handleRedirectToDetails },
   } = useHomeState();
+
+  const { showConfetti, showModal, earnedTokens, closeModal } = useTokenBalance();
 
   return (
     <div className="min-h-screen bg-background relative">
       <BackgroundPattern />
       {showConfetti && <Confetti />}
+      <TokenEarnedModal isOpen={showModal} onClose={closeModal} earnedTokens={earnedTokens} />
       <div className="relative z-10 flex flex-col min-h-screen">
         <section className="flex-grow flex items-center justify-center px-4">
           <div className="flex flex-col justify-center max-w-md space-y-8 py-4 pb-8">

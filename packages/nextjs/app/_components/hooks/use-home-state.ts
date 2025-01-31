@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import useSeasonAndLocation from "./useSeasonAndLocation";
 import type { PutBlobResult, UploadProgressEvent } from "@vercel/blob";
@@ -22,7 +22,6 @@ export default function useHomeState() {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [processingStep, setProcessingStep] = useState<string>("");
   const [classificationResult, setClassificationResult] = useState<PlantClassification | null>(null);
-  const [showConfetti, setShowConfetti] = useState<boolean>(false);
 
   const { locationData } = useSeasonAndLocation();
 
@@ -31,18 +30,6 @@ export default function useHomeState() {
     functionName: "balanceOf",
     args: [address],
   });
-
-  const userBalanceRef = useRef<bigint | undefined>(undefined);
-
-  useEffect(() => {
-    if (tokenBalance && userBalanceRef.current !== undefined && tokenBalance > userBalanceRef.current) {
-      console.log("Token balance increased:", tokenBalance.toString(), "Previous:", userBalanceRef.current.toString());
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 5000);
-    }
-
-    userBalanceRef.current = tokenBalance;
-  }, [tokenBalance]);
 
   const handleUpload = async (imageFile: File, classificationResult: PlantClassification) => {
     if (!isConnected || !address) {
@@ -234,7 +221,6 @@ export default function useHomeState() {
       isProcessing,
       processingStep,
       classificationResult,
-      showConfetti,
       tokenBalance,
     },
     functions: {
