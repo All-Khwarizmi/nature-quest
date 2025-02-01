@@ -1,13 +1,13 @@
 import { privateKeyToAccount } from "viem/accounts";
-import { modeTestnet } from "viem/chains";
+import { mode } from "viem/chains";
 
 //! hardcoded for now or local dev
 export let AGENT_PRIVATE_KEY =
   process.env.AGENT_PRIVATE_KEY || "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
 export const AGENT_ADR = process.env.AGENT_ADDRESS || "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
 export const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS; //* the ERC20 contract address
-export const CHAIN_ID = 919;
-export const CHAIN = modeTestnet;
+export const CHAIN_ID = 34443;
+export const CHAIN = mode;
 export const RPC_PROVIDER_URL = process.env.RPC_PROVIDER_URL;
 
 // Parsing the private key and converting it to an account
