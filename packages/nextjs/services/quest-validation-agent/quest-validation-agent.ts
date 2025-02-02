@@ -40,7 +40,13 @@ export class QuestValidationAgent {
         schema: QuestValidationResultSchema,
         system: `You are an expert quest validation agent. Analyze the submission and quest requirements to determine the best matching quest.
         You MUST:
-        - Return isCompleted: true, if there's a matching quest
+        - Only return isCompleted: true, if:
+            -  there's a matching quest
+            -  the matching quest is not completed by the user already
+            -  the quest is available
+        - Return isCompleted: false, if there's no matching quest.
+        - If there's no matching quest explain why. 
+        - Return questId: if there's a matching quest that the user has not completed yet.
         - Only return ONE best matching quest or none if no good matches exist.
         
         For instance if the user uploads a flower of any type and there's a quest which has flower as classification, you should return :
