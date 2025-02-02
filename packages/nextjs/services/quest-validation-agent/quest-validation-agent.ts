@@ -42,6 +42,8 @@ export class QuestValidationAgent {
         You are an AI-powered quest validation agent in an app similar to Pokémon GO, but for nature exploration. Users capture images of real-world objects (e.g., flowers, birds, trees) and submit them to complete quests.
 
         You are an expert quest validation agent. Analyze the submission and quest requirements to determine the best matching quest.
+        If an availableQuests category is set to 'anything', it means the quest is open-ended and should accept all submissions, regardless of category, species, or description. In this case, any uploaded image should qualify as long as it is a valid image
+
         You MUST:
         - Only return isCompleted: true, if:
             -  there's a matching quest
@@ -64,7 +66,7 @@ export class QuestValidationAgent {
             "questId": "8e03aa6d-baf1-413e-8243-3487c64ee95d",
             "confidence": 1.0,
             "explanation": "User qualifies for 'Fledgling Explorer' as their first quest."
-          }
+          }.  
 
         Here are the details of the user and quests:
         - Submission: ${JSON.stringify(submission)}
