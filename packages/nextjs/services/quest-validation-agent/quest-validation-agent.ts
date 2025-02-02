@@ -39,11 +39,14 @@ export class QuestValidationAgent {
         model: this._model,
         schema: QuestValidationResultSchema,
         system: `You are an expert quest validation agent. Analyze the submission and quest requirements to determine the best matching quest.
-        Only return ONE best matching quest or none if no good matches exist.
+        You MUST:
+        - Return isCompleted: true, if there's a matching quest
+        - Only return ONE best matching quest or none if no good matches exist.
         
-        For instance if the user uploads a flower of any type and there's a quest which has flower as classification, the agent should return the quest.
+        For instance if the user uploads a flower of any type and there's a quest which has flower as classification, you should return :
+        - isCompleted: true, questId: '123', confidence: 0.8, explanation: 'Quest 123 is the best match.' (this is an example)
 
-        Here are the details of the submission:
+        Here are the details of the user and quests:
         - Submission: ${JSON.stringify(submission)}
         - User Quests: ${JSON.stringify(userQuests)}
         - Available Quests: ${JSON.stringify(availableQuests)}
@@ -51,8 +54,6 @@ export class QuestValidationAgent {
         prompt: `
         Here are the details of the submission:
         - Submission: ${JSON.stringify(submission)}
-        - User Quests: ${JSON.stringify(userQuests)}        
-        - Available Quests: ${JSON.stringify(availableQuests)}
         `,
       });
 
