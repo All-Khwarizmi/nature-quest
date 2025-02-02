@@ -5,22 +5,10 @@ import { Button } from "./ui/button";
 import { Camera } from "lucide-react";
 
 interface PhotoCaptureProps {
-  onImageCaptured: (image: File, imageElement: HTMLImageElement) => void;
+  onImageCaptured: (image: File) => void;
 }
 
 export function PhotoCapture({ onImageCaptured }: PhotoCaptureProps) {
-  const createImageFromFile = useCallback((file: File) => {
-    return new Promise<HTMLImageElement>(resolve => {
-      const reader = new FileReader();
-      reader.onload = e => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.src = e.target?.result as string;
-      };
-      reader.readAsDataURL(file);
-    });
-  }, []);
-
   const handleCapture = useCallback(() => {
     const input = document.createElement("input");
     input.type = "file";
@@ -29,13 +17,16 @@ export function PhotoCapture({ onImageCaptured }: PhotoCaptureProps) {
     input.onchange = async e => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
-        const image = await createImageFromFile(file);
-        onImageCaptured(file, image);
+        onImageCaptured(file);
+      } else {
+        console.error("No file selected");
+        alert("No file selected");
+        return;
       }
     };
 
     input.click();
-  }, [onImageCaptured, createImageFromFile]);
+  }, [onImageCaptured]);
 
   return (
     <div className="w-full aspect-square flex items-center justify-center">
