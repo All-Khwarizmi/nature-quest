@@ -29,16 +29,12 @@ export async function POST(req: NextRequest) {
 
     const { userAddress, classificationJson, uploadId } = isRequestValid.data;
 
-    // Start processing but don't await it
-    processQuestInBackground(userAddress, classificationJson, uploadId).catch(error => {
-      console.error("Background processing error:", error);
-    });
+    await processQuestInBackground(userAddress, classificationJson, uploadId);
 
-    // Return quick response
     return Response.json({
-      status: "Processing",
+      status: "Processed",
       uploadId,
-      message: "Your submission is being processed",
+      message: "Your submission has been processed",
     });
   } catch (error) {
     console.error(error);
