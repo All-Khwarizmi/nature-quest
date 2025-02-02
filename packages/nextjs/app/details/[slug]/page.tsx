@@ -50,12 +50,12 @@ export default function SpeciesDetailPage({ params }: { params: { slug: string }
     // if (uploadData?.status !== 'pending') return;
 
     const interval = setInterval(() => {
-      setRemainingSeconds((prev) => (prev > 0 ? prev - 1 : 0));
+      setRemainingSeconds(prev => (prev > 0 ? prev - 1 : 0));
     }, 1000);
 
     return () => clearInterval(interval);
   }, [remainingSeconds]);
-    
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -79,7 +79,7 @@ export default function SpeciesDetailPage({ params }: { params: { slug: string }
     let intervalId: NodeJS.Timeout;
 
     if (uploadData && uploadData.status === "pending") {
-      console.log(uploadData, 'this is updload data')
+      console.log(uploadData, "this is updload data");
       intervalId = setInterval(async () => {
         try {
           console.log("checking if the upload has finished");
@@ -90,7 +90,6 @@ export default function SpeciesDetailPage({ params }: { params: { slug: string }
           const updatedData: Upload = await response.json();
 
           setUploadData(updatedData);
-
         } catch (error) {
           console.error("Failed to check status:", error);
         }
@@ -187,10 +186,9 @@ export default function SpeciesDetailPage({ params }: { params: { slug: string }
                   {uploadData.status === "pending" && (
                     <Alert className="mt-4">
                       <AlertCircle className="h-4 w-4" />
-                      <AlertTitle>{remainingSeconds !== 0 ? 'Checking with MODE Network.' : 'You Rock!'}</AlertTitle>
+                      <AlertTitle>{remainingSeconds !== 0 ? "Checking with MODE Network." : "You Rock!"}</AlertTitle>
                       <AlertDescription>
-                        {remainingSeconds !== 0 ? `Please wait ${remainingSeconds} more seconds.` : 
-                        'Congratulations!'}
+                        {remainingSeconds !== 0 ? `Please wait ${remainingSeconds} more seconds.` : "Congratulations!"}
                       </AlertDescription>
                     </Alert>
                   )}

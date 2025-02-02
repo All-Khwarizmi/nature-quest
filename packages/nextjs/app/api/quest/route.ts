@@ -67,12 +67,13 @@ async function processQuestInBackground(
       const rewardAgent = new RewardAgent(TOOLS, MODEL);
       const AMOUNT = questAgent.getRewardAmount();
       const templatePrompt = RewardAgent.generateRewardPrompt(userAddress, AMOUNT);
-      const tx = await rewardAgent.rewardUser(templatePrompt);
-      const structuredResponsePrompt = RewardAgent.generateRewardResponsePrompt(tx);
-      const response = await rewardAgent.generateStructuredResponse(structuredResponsePrompt);
 
-      if (response.result) {
-        await questAgent.markQuestAsCompleted(user, uploadId);
+      const promises = [rewardAgent.rewardUser(templatePrompt), questAgent.markQuestAsCompleted(user, uploadId)];
+
+      const [tx] = await Promise.allSettled(promises);
+
+      if (!tx) {
+        throw new Error("Failed to reward user");
       }
     } else {
       await db.update(uploads).set({ status: "rejected" }).where(eq(uploads.id, uploadId));
