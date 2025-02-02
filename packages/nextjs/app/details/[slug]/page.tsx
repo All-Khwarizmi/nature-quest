@@ -8,7 +8,6 @@ import { useTokenBalance } from "~~/app/_components/hooks/use-token-balance";
 import { Confetti } from "~~/components/confetti";
 import { TokenEarnedModal } from "~~/components/token-earned-modal";
 import { Alert, AlertDescription, AlertTitle } from "~~/components/ui/alert";
-import { Badge } from "~~/components/ui/badge";
 import { Button } from "~~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~~/components/ui/card";
 

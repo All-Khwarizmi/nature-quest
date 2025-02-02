@@ -2,8 +2,8 @@
 
 import { db } from "../db/drizzle";
 import { users } from "../db/schema";
-import { eq, sql } from "drizzle-orm";
 import type { Quest } from "../db/schema";
+import { eq, sql } from "drizzle-orm";
 
 // TODO: Decide where to place type, nullable stuff
 export type TEMPORARY_User = {
@@ -26,12 +26,7 @@ const DEFAULT_QUEST = {
 
 export default async function addUser(address: string) {
   // TODO: update quests to be an array of quest ids
-  return (
-    await db
-      .insert(users)
-      .values({ address: address, quests: DEFAULT_QUEST})
-      .returning()
-  )[0];
+  return (await db.insert(users).values({ address: address, quests: DEFAULT_QUEST }).returning())[0];
 }
 
 export async function getUser(address: string) {
@@ -72,8 +67,9 @@ export async function moveQuestToCompleted(address: string, questToMove: string)
 export async function addQuestToPending(address: string, questToAdd: Quest): Promise<void> {
   await db
     .update(users)
-    .set({       quests: sql`${users.quests} || jsonb_build_object('pending', (quests->'pending')::jsonb || ${JSON.stringify([questToAdd.id])}::jsonb)`,
-  })
+    .set({
+      quests: sql`${users.quests} || jsonb_build_object('pending', (quests->'pending')::jsonb || ${JSON.stringify([questToAdd.id])}::jsonb)`,
+    })
     .where(eq(users.address, address))
-    .returning()
+    .returning();
 }

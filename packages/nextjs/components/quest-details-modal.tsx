@@ -1,9 +1,9 @@
+import { useAccount } from "wagmi";
 import { Badge } from "~~/components/ui/badge";
 import { Button } from "~~/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "~~/components/ui/dialog";
-import type { Quest } from "~~/src/db/schema";
 import { addQuestToPending } from "~~/src/actions/userActions";
-import { useAccount } from "wagmi";
+import type { Quest } from "~~/src/db/schema";
 
 interface QuestDetailsModalProps {
   quest: Quest | null;
@@ -49,7 +49,7 @@ export function QuestDetailsModal({ quest, isOpen, onClose, isCompleted }: Quest
                   } catch (error) {
                     console.error("Failed to add quest:", error);
                   }
-                }            
+                }
               }}
             >
               Start Quest

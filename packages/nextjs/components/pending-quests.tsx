@@ -52,19 +52,23 @@ export function PendingQuests({ userAddress }: PendingQuestsProps) {
     );
   }
 
-  if (!user && defaultQuest) {    
-    return <p className="text-center text-gray-500"><QuestCard
-    isCompleted={false}
-    key={'8e03aa6d-baf1-413e-8243-3487c64ee95d'}
-    quest={defaultQuest}
-    onClick={() => {
-      /* TODO: Implement quest start logic */
-    }}
-  /></p>;
+  if (!user && defaultQuest) {
+    return (
+      <p className="text-center text-gray-500">
+        <QuestCard
+          isCompleted={false}
+          key={"8e03aa6d-baf1-413e-8243-3487c64ee95d"}
+          quest={defaultQuest}
+          onClick={() => {
+            /* TODO: Implement quest start logic */
+          }}
+        />
+      </p>
+    );
   }
 
   if (pendingQuests.length === 0) {
-    console.log(user, 'user')
+    console.log(user, "user");
     return <p className="text-center text-gray-500">No pending quests available.</p>;
   }
 
