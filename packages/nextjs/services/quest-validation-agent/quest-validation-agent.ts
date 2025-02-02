@@ -47,6 +47,7 @@ export class QuestValidationAgent {
             -  there's a matching quest
             -  the matching quest is not completed by the user already
             -  the quest is available
+            - if the submission category and or description align with a matching quest classification or quest description.
         - Return isCompleted: false, if there's no matching quest.
         - If there's no matching quest explain why. 
         - Return questId: if there's a matching quest that the user has not completed yet.
