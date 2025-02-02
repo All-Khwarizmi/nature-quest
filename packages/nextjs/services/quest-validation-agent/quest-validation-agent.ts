@@ -35,49 +35,52 @@ export class QuestValidationAgent {
     availableQuests: Quest[],
   ): Promise<QuestValidationResult> {
     try {
+      // Add debug logging
+      console.log("Validating submission:", {
+        submission,
+        userQuestsCompleted: userQuests.completed.length,
+        availableQuestsCount: availableQuests.length,
+      });
+
       const result = await generateObject({
         model: this._model,
         schema: QuestValidationResultSchema,
         system: `
-        You are an AI-powered quest validation agent in an app similar to Pokémon GO, but for nature exploration. Users capture images of real-world objects (e.g., flowers, birds, trees) and submit them to complete quests.
+        You are an AI-powered quest validation agent for a nature exploration app.
 
-        You are an expert quest validation agent. Analyze the submission and quest requirements to determine the best matching quest.
-        If an availableQuests category is set to 'anything', it means the quest is open-ended and should accept all submissions, regardless of category, species, or description. In this case, any uploaded image should qualify as long as it is a valid image
-
-        You MUST:
-        - Only return isCompleted: true, if:
-            -  there's a matching quest
-            -  the matching quest is not completed by the user already
-            -  the quest is available
-            - if the submission category and or description align with a matching quest classification or quest description.
-        - Return isCompleted: false, if there's no matching quest.
-        - If there's no matching quest explain why. 
-        - Return questId: if there's a matching quest that the user has not completed yet.
-        - Only return ONE best matching quest or none if no good matches exist.
+        FIRST AND MOST IMPORTANT RULE:
+        Check if user has completed any quests:
+        - If userQuests.completed array is empty (length = 0), this means it's their first submission
+        - For first-time submissions, you MUST ALWAYS return:
+        {
+          "isCompleted": true,
+          "questId": "8e03aa6d-baf1-413e-8243-3487c64ee95d", // First available quest
+          "confidence": 1.0,
+          "explanation": "First time submission automatically qualifies for the introductory quest."
+        }
         
-        For instance if the user uploads a flower of any type and there's a quest which has flower as classification, you should return :
-        - isCompleted: true, questId: '123', confidence: 0.8, explanation: 'Quest 123 is the best match.' (this is an example)
+        Only if the user has previous completed quests, proceed with normal validation:
+        - Check if submission matches any available quest classifications
+        - Verify quest hasn't been completed
+        - Return best matching quest or explain why no match
 
-        Special Rule:
-        If the user has **zero completed quests**, **always** return:
-          json
-          {
-            "isCompleted": true,
-            "questId": "8e03aa6d-baf1-413e-8243-3487c64ee95d",
-            "confidence": 1.0,
-            "explanation": "User qualifies for 'Fledgling Explorer' as their first quest."
-          }.  
+        You MUST match only quest per submission.
 
-        Here are the details of the user and quests:
-        - Submission: ${JSON.stringify(submission)}
-        - User Quests: ${JSON.stringify(userQuests)}
-        - Available Quests: ${JSON.stringify(availableQuests)}
+        Current Context:
+        - User has completed ${userQuests.completed.length} quests
+        - There are ${availableQuests.length} available quests
+        - Submission category: ${submission.category}
         `,
-        prompt: `
-        Here are the details of the submission:
+        prompt: `Based on:
+        - User completed quests: ${userQuests.completed.length}
         - Submission: ${JSON.stringify(submission)}
-        `,
+        - Available quests: ${JSON.stringify(availableQuests)}
+
+        Determine if this qualifies for completion. Remember: If this is a first-time submission (0 completed quests), automatically approve it. Also remember only one quest per submission.`,
       });
+
+      // Add validation logging
+      console.log("Validation result:", result.object);
 
       return result.object;
     } catch (error) {

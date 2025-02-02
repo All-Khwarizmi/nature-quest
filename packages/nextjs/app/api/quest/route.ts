@@ -49,7 +49,8 @@ async function processQuestInBackground(
 ) {
   try {
     const MODEL = openai("gpt-4o");
-    const validationAgent = new QuestValidationAgent(MODEL);
+    const MODEL_4 = openai("gpt-4");
+    const validationAgent = new QuestValidationAgent(MODEL_4);
     const questAgent = new QuestAgent(db, validationAgent);
     const user = (await getUserByAddress(userAddress)) as TEMPORARY_User;
 
