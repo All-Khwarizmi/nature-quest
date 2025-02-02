@@ -40,7 +40,7 @@ export const Footer = () => {
           </div>
           <div className="hidden md:block">·</div>
           <a
-            href="https://github.com/yourusername/nature-quest"
+            href="https://github.com/All-Khwarizmi/nature-quest"
             target="_blank"
             rel="noreferrer"
             className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
